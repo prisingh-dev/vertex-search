@@ -58,49 +58,50 @@ The `SearchContext` object flows through the chain carrying the request/response
 ## Project Structure
 
 ```
-backend_dot_net/
+vertex-search/
 ├── README.md
-└── VertexSearchApi/
-    ├── VertexSearchApi.csproj
-    ├── Program.cs                          # Entry point, DI wiring, middleware
-    ├── appsettings.json                    # Default configuration
-    ├── appsettings.Development.json        # Dev-only log levels
-    ├── Config/
-    │   ├── GcpOptions.cs                   # Strongly-typed GCP config
-    │   ├── GcpPaths.cs                     # Builds Retail resource path strings
-    │   └── SearchOptions.cs                # Paging, sort & facet aliases
-    ├── Controllers/
-    │   ├── SearchController.cs             # POST /api/v1/search       (live GCP)
-    │   └── MockSearchController.cs         # POST /api/v1/search/mock  (no credentials)
-    ├── DTOs/
-    │   ├── Request/
-    │   │   └── KeywordSearchRequest.cs
-    │   └── Response/
-    │       ├── KeywordSearchResponse.cs
-    │       ├── ProductResult.cs
-    │       ├── VariantResult.cs
-    │       ├── FacetResult.cs
-    │       ├── FacetValueResult.cs
-    │       └── SearchStats.cs
-    ├── Exceptions/
-    │   ├── InvalidSearchRequestException.cs
-    │   └── SearchServiceException.cs
-    ├── Middleware/
-    │   └── GlobalExceptionHandler.cs       # Maps exceptions to HTTP error responses
-    └── Services/
-        ├── Context/
-        │   └── SearchContext.cs            # Mutable pipeline context
-        ├── Mappers/
-        │   ├── SearchRequestMapper.cs      # API request → Retail SearchRequest
-        │   └── SearchResponseMapper.cs     # Retail SearchResponse → API response
-        └── Pipeline/
-            ├── Step.cs                     # Abstract base with latency logging
-            ├── StepService.cs              # Executes the step chain
-            └── Search/
-                ├── ValidateRequestStep.cs
-                ├── ConvertRequestStep.cs
-                ├── SearchStep.cs
-                └── ConvertResponseStep.cs
+├── vertex-search.sln
+├── VertexSearchApi.csproj
+├── Program.cs                          # Entry point, DI wiring, middleware
+├── appsettings.json                    # Default configuration
+├── appsettings.Development.json        # Dev-only log levels
+├── Config/
+│   ├── GcpOptions.cs                   # Strongly-typed GCP config
+│   ├── GcpPaths.cs                     # Builds Retail resource path strings
+│   └── SearchOptions.cs                # Paging, sort & facet aliases
+├── Controllers/
+│   ├── SearchController.cs             # POST /api/v1/search       (live GCP)
+│   └── MockSearchController.cs         # POST /api/v1/search/mock  (no credentials)
+├── DTOs/
+│   ├── Request/
+│   │   └── KeywordSearchRequest.cs
+│   └── Response/
+│       ├── KeywordSearchResponse.cs
+│       ├── ProductResult.cs
+│       ├── VariantResult.cs
+│       ├── FacetResult.cs
+│       ├── FacetValueResult.cs
+│       └── SearchStats.cs
+├── Exceptions/
+│   ├── InvalidSearchRequestException.cs
+│   └── SearchServiceException.cs
+├── Middleware/
+│   └── GlobalExceptionHandler.cs       # Maps exceptions to HTTP error responses
+└── Services/
+    ├── Context/
+    │   └── SearchContext.cs            # Mutable pipeline context
+    ├── Mappers/
+    │   ├── SearchRequestMapper.cs      # API request → Retail SearchRequest
+    │   └── SearchResponseMapper.cs     # Retail SearchResponse → API response
+    └── Pipeline/
+        ├── Step.cs                     # Abstract base with latency logging
+        ├── StepService.cs              # Executes the step chain
+        └── Search/
+            ├── ValidateRequestStep.cs
+            ├── ConvertRequestStep.cs
+            ├── SearchStep.cs
+            ├── MockSearchStep.cs       # Returns fixture data (no GCP call)
+            └── ConvertResponseStep.cs
 ```
 
 ---
@@ -110,13 +111,7 @@ backend_dot_net/
 > Use this if you want to **explore the API schema in Swagger** or develop a UI  
 > without setting up Google Cloud authentication.
 
-### 1. Navigate to the project
-
-```bash
-cd backend_dot_net/VertexSearchApi
-```
-
-### 2. Restore & run (no environment variables required)
+### 1. Restore & run (no environment variables required)
 
 ```bash
 dotnet restore
@@ -251,13 +246,7 @@ No additional configuration required when running on GCP infrastructure with the
 
 ## Running the Application (live GCP)
 
-### 1. Clone / navigate to the project
-
-```bash
-cd backend_dot_net/VertexSearchApi
-```
-
-### 2. Set your GCP project ID
+### 1. Set your GCP project ID
 
 ```bash
 # via environment variable (recommended)
@@ -415,7 +404,7 @@ Requires Google Cloud credentials and a configured GCP project.
 ### `POST /api/v1/search/mock`
 
 Returns **hardcoded dummy results** using the exact same request/response schema as  
-the live endpoint. Implemented in [Controllers/MockSearchController.cs](VertexSearchApi/Controllers/MockSearchController.cs).  
+the live endpoint. Implemented in [Controllers/MockSearchController.cs](Controllers/MockSearchController.cs).  
 No GCP credentials or Retail API access required.
 
 **Request** (`application/json`) — same schema as the live endpoint:
