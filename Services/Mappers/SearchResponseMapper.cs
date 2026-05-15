@@ -66,10 +66,19 @@ public class SearchResponseMapper
 
         var pi = product.PriceInfo;
         ProductPrice? price = pi is { Price: > 0 }
-            ? new ProductPrice(
-                NullIfEmpty(pi.CurrencyCode),
-                pi.Price,
-                pi.OriginalPrice > 0 && pi.OriginalPrice != pi.Price ? pi.OriginalPrice : null)
+            ? new ProductPrice
+            {
+                CurrencyCode       = NullIfEmpty(pi.CurrencyCode),
+                Price              = pi.Price,
+                OriginalPrice      = pi.OriginalPrice > 0 && pi.OriginalPrice != pi.Price
+                                         ? pi.OriginalPrice : null,
+                Cost               = pi.Cost > 0 ? pi.Cost : null,
+                PriceEffectiveTime = pi.PriceEffectiveTime is { Seconds: > 0 } pet
+                                         ? new DateTimeOffset(pet.ToDateTime()) : null,
+                PriceExpireTime    = pi.PriceExpireTime is { Seconds: > 0 } pxt
+                                         ? new DateTimeOffset(pxt.ToDateTime()) : null,
+                PriceRange         = MapPriceRange(pi.PriceRange)
+            }
             : null;
 
         return new ProductResult
@@ -92,6 +101,15 @@ public class SearchResponseMapper
             .ToList();
 
         return new FacetResult(facet.Key, values);
+    }
+
+    private static ProductPriceRange? MapPriceRange(PriceInfo.Types.PriceRange? range)
+    {
+        if (range is null) return null;
+        var pb = range.Price;
+        var ob = range.OriginalPrice;
+        if (pb is null && ob is null) return null;
+        return new ProductPriceRange(pb?.Minimum, pb?.Maximum, ob?.Minimum, ob?.Maximum);
     }
 
     private static string? NullIfEmpty(string? s)

@@ -970,10 +970,19 @@
         { <span class="t-key">"id"</span>: <span class="t-str">"prod-001-sz9"</span> },
         { <span class="t-key">"id"</span>: <span class="t-str">"prod-001-sz10"</span> }
       ],
-      <span class="t-key">"price"</span>: {                           <span class="t-cm">// null/absent when no price in catalog</span>
+      <span class="t-key">"price"</span>: {                           <span class="t-cm">// absent when price ≤ 0 in catalog</span>
         <span class="t-key">"currencyCode"</span>: <span class="t-str">"AUD"</span>,
         <span class="t-key">"price"</span>: <span class="t-num">149.99</span>,
-        <span class="t-key">"originalPrice"</span>: <span class="t-num">199.99</span>          <span class="t-cm">// absent when no discount</span>
+        <span class="t-key">"originalPrice"</span>: <span class="t-num">199.99</span>,          <span class="t-cm">// absent when no discount</span>
+        <span class="t-key">"cost"</span>: <span class="t-num">89.50</span>,                   <span class="t-cm">// absent when not set in catalog</span>
+        <span class="t-key">"priceEffectiveTime"</span>: <span class="t-str">"2025-01-01T00:00:00Z"</span>,  <span class="t-cm">// absent when not set</span>
+        <span class="t-key">"priceExpireTime"</span>: <span class="t-str">"2025-12-31T23:59:59Z"</span>,    <span class="t-cm">// absent when not set</span>
+        <span class="t-key">"priceRange"</span>: {                  <span class="t-cm">// absent when no variant price data</span>
+          <span class="t-key">"priceMin"</span>: <span class="t-num">129.99</span>,
+          <span class="t-key">"priceMax"</span>: <span class="t-num">169.99</span>,
+          <span class="t-key">"originalPriceMin"</span>: <span class="t-num">179.99</span>,
+          <span class="t-key">"originalPriceMax"</span>: <span class="t-num">219.99</span>
+        }
       }
     }
   ],
@@ -1251,11 +1260,31 @@
         <div class="panel">
           <div class="panel-body" style="padding:0">
             <table class="param-table">
-              <thead><tr><th style="width:150px">Field</th><th style="width:90px">Type</th><th>Description</th></tr></thead>
+              <thead><tr><th style="width:170px">Field</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
               <tbody>
-                <tr><td><span class="param-name">currencyCode</span></td><td><span class="param-type">string</span></td><td class="param-desc">ISO 4217 currency code (e.g. <code class="inline-code">AUD</code>).</td></tr>
-                <tr><td><span class="param-name">price</span></td><td><span class="param-type">number</span></td><td class="param-desc">Current selling price.</td></tr>
-                <tr><td><span class="param-name">originalPrice</span></td><td><span class="param-type">number</span></td><td class="param-desc">Original pre-discount price. Omitted when no discount applies.</td></tr>
+                <tr><td><span class="param-name">currencyCode</span></td><td><span class="param-type">string</span></td><td class="param-desc">ISO 4217 currency code (e.g. <code class="inline-code">AUD</code>). Omitted when not set in the catalog.</td></tr>
+                <tr><td><span class="param-name">price</span></td><td><span class="param-type">number</span></td><td class="param-desc">Current selling price. Always present when the <code class="inline-code">price</code> object is returned (only returned when <code class="inline-code">price &gt; 0</code>).</td></tr>
+                <tr><td><span class="param-name">originalPrice</span></td><td><span class="param-type">number</span></td><td class="param-desc">Pre-discount price. Omitted when equal to <code class="inline-code">price</code> or when no original price is set.</td></tr>
+                <tr><td><span class="param-name">cost</span></td><td><span class="param-type">number</span></td><td class="param-desc">Product cost (wholesale/landed cost). Omitted when not set in the catalog.</td></tr>
+                <tr><td><span class="param-name">priceEffectiveTime</span></td><td><span class="param-type">string (ISO 8601)</span></td><td class="param-desc">UTC timestamp from which the current price is effective. Omitted when not set.</td></tr>
+                <tr><td><span class="param-name">priceExpireTime</span></td><td><span class="param-type">string (ISO 8601)</span></td><td class="param-desc">UTC timestamp after which the current price expires. Omitted when not set.</td></tr>
+                <tr><td><span class="param-name">priceRange</span></td><td><span class="param-type">ProductPriceRange</span></td><td class="param-desc">Min/max price spread across all variants of this product. Omitted when no variant price data is available.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ProductPriceRange -->
+        <h3 class="sub-title">ProductPriceRange</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:170px">Field</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">priceMin</span></td><td><span class="param-type">number</span></td><td class="param-desc">Lowest current selling price across all variants.</td></tr>
+                <tr><td><span class="param-name">priceMax</span></td><td><span class="param-type">number</span></td><td class="param-desc">Highest current selling price across all variants.</td></tr>
+                <tr><td><span class="param-name">originalPriceMin</span></td><td><span class="param-type">number</span></td><td class="param-desc">Lowest original (pre-discount) price across all variants.</td></tr>
+                <tr><td><span class="param-name">originalPriceMax</span></td><td><span class="param-type">number</span></td><td class="param-desc">Highest original (pre-discount) price across all variants.</td></tr>
               </tbody>
             </table>
           </div>
