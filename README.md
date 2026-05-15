@@ -95,6 +95,7 @@ vertex-search/
 │       ├── FacetResult.cs               # positional record
 │       ├── FacetValueResult.cs          # positional record
 │       ├── SearchStats.cs               # positional record
+│       ├── ProductPrice.cs              # record — CurrencyCode, Price, OriginalPrice?
 │       ├── AutocompleteResponse.cs      # record
 │       └── AutocompleteSuggestion.cs    # record
 │

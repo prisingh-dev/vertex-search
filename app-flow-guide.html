@@ -138,7 +138,7 @@
     /* endpoint summary row */
     .endpoint-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 16px;
     }
     .ep-card {
@@ -522,7 +522,7 @@
     <div class="hero-eyebrow">Demo Walkthrough · .NET 10 · Google Cloud Retail API</div>
     <h1>Vertex <span>Search API</span></h1>
     <p class="hero-sub">
-      A production-grade ASP.NET Core wrapper over <strong>Google Vertex AI Retail Search</strong> and <strong>Retail Completion</strong> — exposing product search, mock testing, and typeahead autocomplete as clean REST endpoints.
+      A production-grade ASP.NET Core wrapper over <strong>Google Vertex AI Retail Search</strong> and <strong>Retail Completion</strong> — exposing product search and typeahead autocomplete as clean REST endpoints.
     </p>
 
     <div class="hero-chips">
@@ -540,11 +540,6 @@
         <div class="ep-method post">POST</div>
         <div class="ep-path">/api/v1/search</div>
         <div class="ep-desc">Full keyword search against live Vertex AI Retail catalog</div>
-      </div>
-      <div class="ep-card">
-        <div class="ep-method post">POST</div>
-        <div class="ep-path">/api/v1/search/mock</div>
-        <div class="ep-desc">Same schema, hardcoded fixture data — no GCP credentials needed</div>
       </div>
       <div class="ep-card">
         <div class="ep-method get">GET</div>
@@ -580,7 +575,7 @@
 
     <div class="stats-row">
       <div class="stat-box">
-        <div class="stat-val blue">3</div>
+        <div class="stat-val blue">2</div>
         <div class="stat-label">REST Endpoints</div>
       </div>
       <div class="stat-box">
@@ -588,26 +583,20 @@
         <div class="stat-label">GCP Clients</div>
       </div>
       <div class="stat-box">
-        <div class="stat-val purple">3</div>
+        <div class="stat-val purple">2</div>
         <div class="stat-label">Pipeline Chains</div>
       </div>
       <div class="stat-box">
-        <div class="stat-val green">13</div>
-        <div class="stat-label">New Files Added</div>
+        <div class="stat-val green">68</div>
+        <div class="stat-label">Unit Tests</div>
       </div>
     </div>
 
-    <div class="g3">
+    <div class="g2">
       <div class="card">
         <div class="card-head">🔍 Product Search</div>
         <div class="card-body">
           Full keyword search against the Woolworths catalog in Vertex AI. Supports sorting, filtering, faceting, pagination, and store-level scoping via <code>storeId</code>.
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-head">🎭 Mock Search</div>
-        <div class="card-body">
-          Identical request/response schema to live search. Returns 5 hardcoded running-shoe products. <strong>No GCP credentials required</strong> — ideal for frontend development.
         </div>
       </div>
       <div class="card featured">
@@ -629,14 +618,14 @@
       <div class="sec-num blue">1</div>
       <div class="sec-title-wrap">
         <div class="sec-title">Architecture — Pipeline Pattern</div>
-        <div class="sec-sub">Three independent chain-of-responsibility pipelines sharing the same Step&lt;T&gt; base</div>
+        <div class="sec-sub">Two independent chain-of-responsibility pipelines sharing the same Step&lt;T&gt; base</div>
       </div>
     </div>
     <div class="section-line blue"></div>
 
     <div class="note blue">
       <b>Chain of Responsibility</b>
-      Every request flows through a sequence of steps. Each step does one job, mutates a shared context object, and delegates to the next. Steps are swappable — mock vs live is just one step different.
+      Every request flows through a sequence of steps. Each step does one job, mutates a shared context object, and delegates to the next. Each pipeline is fully async and independently composable.
     </div>
 
     <!-- Pipeline 1: Search -->
@@ -677,45 +666,7 @@
       </div>
     </div>
 
-    <!-- Pipeline 2: Mock -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-head">🟡 Mock Search Pipeline — <code>POST /api/v1/search/mock</code></div>
-      <div class="pipeline">
-        <div class="pl-wrap">
-          <div class="pl-step">
-            <div class="pl-box client"><div class="pl-icon">👤</div>Client Request</div>
-            <div class="pl-label">JSON body (same schema)</div>
-          </div>
-          <div class="pl-arrow">→</div>
-          <div class="pl-step">
-            <div class="pl-box validate"><div class="pl-icon">🛡️</div>Validate Request</div>
-            <div class="pl-label">same rules apply</div>
-          </div>
-          <div class="pl-arrow">→</div>
-          <div class="pl-step">
-            <div class="pl-box convert"><div class="pl-icon">🔄</div>Convert Request</div>
-            <div class="pl-label">DTO → SearchRequest</div>
-          </div>
-          <div class="pl-arrow">→</div>
-          <div class="pl-step">
-            <div class="pl-box mock"><div class="pl-icon">🎭</div>Mock Step</div>
-            <div class="pl-label">Fixture data<br/>no GCP call</div>
-          </div>
-          <div class="pl-arrow">→</div>
-          <div class="pl-step">
-            <div class="pl-box convert"><div class="pl-icon">📦</div>Convert Response</div>
-            <div class="pl-label">→ DTO</div>
-          </div>
-          <div class="pl-arrow">→</div>
-          <div class="pl-step">
-            <div class="pl-box resp"><div class="pl-icon">✅</div>JSON Response</div>
-            <div class="pl-label">5 mock products</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pipeline 3: Autocomplete -->
+    <!-- Pipeline 2: Autocomplete -->
     <div class="card featured">
       <div class="card-head">🟢 Autocomplete Pipeline — <code>GET /api/v1/autocomplete</code> <span class="tag new">NEW</span></div>
       <div class="pipeline">
@@ -772,7 +723,7 @@
           <table class="tbl">
             <thead><tr><th>Context</th><th>Used by</th></tr></thead>
             <tbody>
-              <tr><td><code>SearchContext</code></td><td>Search + Mock pipelines</td></tr>
+              <tr><td><code>SearchContext</code></td><td>Search pipeline</td></tr>
               <tr><td><code>AutocompleteContext</code></td><td>Autocomplete pipeline</td></tr>
             </tbody>
           </table>
@@ -1055,7 +1006,7 @@
           <div class="tl-head">AutocompleteStep <span class="tag orange">CompletionServiceClient → GCP</span></div>
           <div class="tl-body">
 <pre><code>context.RetailCompleteQueryResponse =
-    _client.<span class="fn">CompleteQuery</span>(context.RetailCompleteQueryRequest!);</code></pre>
+    await _client.<span class="fn">CompleteQueryAsync</span>(context.RetailCompleteQueryRequest!);</code></pre>
             GCP returns a <code>CompleteQueryResponse</code> with a list of <code>CompletionResult</code> objects and an <code>AttributionToken</code>. Failures throw <code>AutocompleteServiceException</code> → HTTP 503.
           </div>
         </div>
@@ -1226,13 +1177,13 @@
     <div class="sec-header">
       <div class="sec-num green">7</div>
       <div class="sec-title-wrap">
-        <div class="sec-title">All Three Endpoints at a Glance</div>
-        <div class="sec-sub">Quick reference for the demo</div>
+        <div class="sec-title">Both Endpoints at a Glance</div>
+        <div class="sec-sub">Quick reference</div>
       </div>
     </div>
     <div class="section-line green"></div>
 
-    <div class="g3">
+    <div class="g2">
       <div class="card">
         <div class="card-head" style="color:var(--blue)">🔵 POST /api/v1/search</div>
         <div class="card-body">
@@ -1241,17 +1192,6 @@
             <tr><td><strong>Credentials</strong></td><td>✅ Required</td></tr>
             <tr><td><strong>New field</strong></td><td><code>storeId</code> → PlaceId</td></tr>
             <tr><td><strong>Use for</strong></td><td>Production, staging</td></tr>
-          </table>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-head" style="color:var(--yellow)">🟡 POST /api/v1/search/mock</div>
-        <div class="card-body">
-          <table class="tbl">
-            <tr><td><strong>GCP Client</strong></td><td>None — fixture data</td></tr>
-            <tr><td><strong>Credentials</strong></td><td>❌ Not needed</td></tr>
-            <tr><td><strong>Same schema</strong></td><td>Identical to live</td></tr>
-            <tr><td><strong>Use for</strong></td><td>Local dev, UI testing</td></tr>
           </table>
         </div>
       </div>
@@ -1267,17 +1207,12 @@
         </div>
       </div>
     </div>
-
-    <div class="note green" style="margin-top:16px">
-      <b>Frontend compatibility</b>
-      Search and Mock share the exact same request body schema and response shape. Frontend can develop against Mock and switch to the live endpoint with zero code changes.
-    </div>
   </div>
 
 </div><!-- /page -->
 
 <div class="footer">
-  <strong>Vertex Search API</strong> · .NET 10 · Google.Cloud.Retail.V2 v2.16.0 · Swashbuckle v7.2.0 · 3 endpoints
+  <strong>Vertex Search API</strong> · .NET 10 · Google.Cloud.Retail.V2 v2.16.0 · Swashbuckle v7.2.0 · 2 endpoints
 </div>
 
 </body>
