@@ -23,17 +23,28 @@ public class SearchRequestMapper
 
         var request = new SearchRequest
         {
-            Branch               = GcpPaths.Branch(_gcp),
-            Placement            = GcpPaths.Placement(_gcp),
-            Query                = api.Query!,
-            VisitorId            = api.VisitorId!,
-            PageSize             = pageSize,
-            Offset               = offset,
-            QueryExpansionSpec   = BuildQueryExpansionSpec(api.QueryExpansionCondition)
+            Branch             = GcpPaths.Branch(_gcp),
+            Placement          = GcpPaths.Placement(_gcp),
+            Query              = api.Query!,
+            VisitorId          = api.VisitorId!,
+            PageSize           = pageSize,
+            QueryExpansionSpec = BuildQueryExpansionSpec(api.QueryExpansionCondition)
         };
+
+        // page_token and offset are mutually exclusive per the Retail API spec:
+        // "offset is only considered if pageToken is unset."
+        // When a token is supplied it encodes the position and experiment context —
+        // sending offset alongside would be silently ignored by GCP anyway.
+        if (!string.IsNullOrWhiteSpace(api.PageToken))
+            request.PageToken = api.PageToken;
+        else
+            request.Offset = offset;
 
         if (!string.IsNullOrWhiteSpace(api.Filter))
             request.Filter = api.Filter;
+
+        if (!string.IsNullOrWhiteSpace(api.StoreId))
+            request.PlaceId = api.StoreId;
 
         var sort = ResolveSort(api.OrderBy);
         if (!string.IsNullOrWhiteSpace(sort))

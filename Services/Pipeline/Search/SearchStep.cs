@@ -12,14 +12,14 @@ public class SearchStep : Step<SearchContext>
     public SearchStep(ILogger<SearchStep> logger, SearchServiceClient client)
         : base(logger) => _client = client;
 
-    protected override void InnerHandle(SearchContext context)
+    protected override async Task InnerHandleAsync(SearchContext context)
     {
         try
         {
-            context.RetailSearchResponse = _client
-                .Search(context.RetailSearchRequest!)
+            context.RetailSearchResponse = await _client
+                .SearchAsync(context.RetailSearchRequest!)
                 .AsRawResponses()
-                .First();
+                .FirstAsync();
         }
         catch (Exception ex)
         {

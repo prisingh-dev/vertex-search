@@ -7,9 +7,9 @@ public class StepService<T> where T : class
 
     public StepService(Step<T> firstStep) => _firstStep = firstStep;
 
-    public T Execute(T context)
+    public async Task<T> ExecuteAsync(T context)
     {
-        _firstStep.Handle(context);
+        await _firstStep.HandleAsync(context);
         return context;
     }
 }

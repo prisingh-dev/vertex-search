@@ -11,6 +11,9 @@ public class ConvertRequestStep : Step<SearchContext>
     public ConvertRequestStep(ILogger<ConvertRequestStep> logger, SearchRequestMapper mapper)
         : base(logger) => _mapper = mapper;
 
-    protected override void InnerHandle(SearchContext context)
-        => context.RetailSearchRequest = _mapper.ToRetailSearchRequest(context.ApiRequest!);
+    protected override Task InnerHandleAsync(SearchContext context)
+    {
+        context.RetailSearchRequest = _mapper.ToRetailSearchRequest(context.ApiRequest!);
+        return Task.CompletedTask;
+    }
 }

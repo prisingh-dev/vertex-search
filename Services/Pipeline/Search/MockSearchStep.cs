@@ -9,9 +9,10 @@ public class MockSearchStep : Step<SearchContext>
 {
     public MockSearchStep(ILogger<MockSearchStep> logger) : base(logger) { }
 
-    protected override void InnerHandle(SearchContext context)
+    protected override Task InnerHandleAsync(SearchContext context)
     {
         context.RetailSearchResponse = BuildMockResponse(context);
+        return Task.CompletedTask;
     }
 
     private static SearchResponse BuildMockResponse(SearchContext context)
@@ -57,7 +58,8 @@ public class MockSearchStep : Step<SearchContext>
             uri: "https://example.com/products/001",
             attrs: new() { ["color"] = Text("Red"), ["brand"] = Text("Nike"),
                            ["gender"] = Text("Men"), ["material"] = Text("Mesh") },
-            variantIds: ["product-001-sz9", "product-001-sz10", "product-001-sz11"]),
+            variantIds: ["product-001-sz9", "product-001-sz10", "product-001-sz11"],
+            price: 189.99f, originalPrice: 229.99f),
 
         MakeResult(
             id: "product-002",
@@ -66,7 +68,8 @@ public class MockSearchStep : Step<SearchContext>
             uri: "https://example.com/products/002",
             attrs: new() { ["color"] = Text("Blue"), ["brand"] = Text("Adidas"),
                            ["gender"] = Text("Women") },
-            variantIds: ["product-002-sz7", "product-002-sz8"]),
+            variantIds: ["product-002-sz7", "product-002-sz8"],
+            price: 149.99f, originalPrice: 179.99f),
 
         MakeResult(
             id: "product-003",
@@ -75,7 +78,8 @@ public class MockSearchStep : Step<SearchContext>
             uri: "https://example.com/products/003",
             attrs: new() { ["color"] = Text("Black"), ["brand"] = Text("New Balance"),
                            ["gender"] = Text("Unisex") },
-            variantIds: ["product-003-sz8", "product-003-sz9", "product-003-sz10", "product-003-sz11"]),
+            variantIds: ["product-003-sz8", "product-003-sz9", "product-003-sz10", "product-003-sz11"],
+            price: 169.99f),
 
         MakeResult(
             id: "product-004",
@@ -84,7 +88,8 @@ public class MockSearchStep : Step<SearchContext>
             uri: "https://example.com/products/004",
             attrs: new() { ["color"] = Text("Green"), ["brand"] = Text("Puma"),
                            ["gender"] = Text("Kids") },
-            variantIds: ["product-004-sz4", "product-004-sz5"]),
+            variantIds: ["product-004-sz4", "product-004-sz5"],
+            price: 79.99f, originalPrice: 99.99f),
 
         MakeResult(
             id: "product-005",
@@ -93,7 +98,8 @@ public class MockSearchStep : Step<SearchContext>
             uri: "https://example.com/products/005",
             attrs: new() { ["color"] = Text("White"), ["brand"] = Text("Asics"),
                            ["gender"] = Text("Unisex") },
-            variantIds: ["product-005-sz9", "product-005-sz10"])
+            variantIds: ["product-005-sz9", "product-005-sz10"],
+            price: 249.99f)
     ];
 
     private static List<SearchResponse.Types.Facet> AllFacets() =>
@@ -121,9 +127,20 @@ public class MockSearchStep : Step<SearchContext>
         IEnumerable<string> categories,
         string uri,
         Dictionary<string, CustomAttribute> attrs,
-        IEnumerable<string> variantIds)
+        IEnumerable<string> variantIds,
+        float price,
+        float? originalPrice = null)
     {
-        var product = new Product { Id = id, PrimaryProductId = id, Title = title, Uri = uri };
+        var product = new Product
+        {
+            Id = id, PrimaryProductId = id, Title = title, Uri = uri,
+            PriceInfo = new PriceInfo
+            {
+                CurrencyCode  = "AUD",
+                Price         = price,
+                OriginalPrice = originalPrice ?? price
+            }
+        };
         product.Categories.AddRange(categories);
         product.Variants.AddRange(variantIds.Select(vid => new Product { Id = vid }));
         foreach (var (k, v) in attrs) product.Attributes[k] = v;

@@ -1,11 +1,12 @@
 namespace VertexSearchApi.DTOs.Response;
 
-public class ProductResult
+public record ProductResult
 {
-    public string? Id { get; set; }
-    public string? Title { get; set; }
-    public List<string>? Categories { get; set; }
-    public string? Uri { get; set; }
-    public Dictionary<string, string>? Attributes { get; set; }
-    public List<VariantResult>? Variants { get; set; }
+    public string? Id { get; init; }
+    public string? Title { get; init; }
+    public List<string>? Categories { get; init; }
+    public string? Uri { get; init; }
+    public Dictionary<string, string>? Attributes { get; init; }
+    public List<VariantResult>? Variants { get; init; }
+    public ProductPrice? Price { get; init; }
 }
