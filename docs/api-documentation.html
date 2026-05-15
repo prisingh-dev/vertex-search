@@ -849,7 +849,13 @@
                   <td><span class="param-name">offset</span></td>
                   <td><span class="param-type">integer</span></td>
                   <td><span class="badge optional">Optional</span></td>
-                  <td class="param-desc">Zero-based index of the first result to return. Used for offset pagination. <span class="param-default">Default: 0.</span></td>
+                  <td class="param-desc">Zero-based index of the first result to return. Used for offset pagination. <span class="param-default">Default: 0.</span> Ignored when <code class="inline-code">pageToken</code> is provided.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">pageToken</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">Cursor token for page-based pagination. Use the <code class="inline-code">nextPageToken</code> from the previous response to fetch the next page. When provided, <code class="inline-code">offset</code> is ignored.</td>
                 </tr>
                 <tr>
                   <td><span class="param-name">orderBy</span></td>
@@ -889,7 +895,7 @@
         <!-- Request example -->
         <div class="schema-tabs">
           <div class="schema-tab-header">
-            <div class="schema-tab active">Request Example</div>
+            <div class="schema-tab active">Request Example — First Page</div>
           </div>
           <pre><code><span class="t-cm">// POST /api/v1/search</span>
 <span class="t-cm">// Content-Type: application/json</span>
@@ -898,17 +904,52 @@
   <span class="t-key">"query"</span>: <span class="t-str">"red running shoes"</span>,
   <span class="t-key">"visitorId"</span>: <span class="t-str">"session-a1b2c3"</span>,
   <span class="t-key">"pageSize"</span>: <span class="t-num">20</span>,
-  <span class="t-key">"offset"</span>: <span class="t-num">0</span>,
+  <span class="t-key">"offset"</span>: <span class="t-num">0</span>,                          <span class="t-cm">// offset-based pagination</span>
   <span class="t-key">"orderBy"</span>: <span class="t-str">"price_low_to_high"</span>,
   <span class="t-key">"filter"</span>: <span class="t-str">"availability: IN_STOCK"</span>,
   <span class="t-key">"facetKeys"</span>: [<span class="t-str">"color"</span>, <span class="t-str">"brand"</span>, <span class="t-str">"size"</span>],
   <span class="t-key">"queryExpansionCondition"</span>: <span class="t-str">"AUTO"</span>,
-  <span class="t-key">"storeId"</span>: <span class="t-str">"store-042"</span>     <span class="t-cm">// optional — scope to specific store</span>
+  <span class="t-key">"storeId"</span>: <span class="t-str">"store-042"</span>               <span class="t-cm">// optional — scope to specific store</span>
+}</code></pre>
+        </div>
+
+        <div class="schema-tabs">
+          <div class="schema-tab-header">
+            <div class="schema-tab active">Request Example — Next Page (cursor)</div>
+          </div>
+          <pre><code><span class="t-cm">// Use pageToken returned in the previous response to fetch the next page.</span>
+<span class="t-cm">// When pageToken is set, offset is ignored.</span>
+
+{
+  <span class="t-key">"query"</span>: <span class="t-str">"red running shoes"</span>,
+  <span class="t-key">"visitorId"</span>: <span class="t-str">"session-a1b2c3"</span>,
+  <span class="t-key">"pageSize"</span>: <span class="t-num">20</span>,
+  <span class="t-key">"pageToken"</span>: <span class="t-str">"eyJwYWdlIjogMn0..."</span>  <span class="t-cm">// nextPageToken from previous response</span>
 }</code></pre>
         </div>
 
         <!-- Response -->
         <h3 class="sub-title">Response — 200 OK</h3>
+
+        <div class="panel" style="margin-bottom:20px">
+          <div class="panel-header">Response Fields</div>
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:180px">Field</th><th style="width:110px">Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">products</span></td><td><span class="param-type">ProductResult[]</span></td><td class="param-desc">Ranked list of matching products for the current page.</td></tr>
+                <tr><td><span class="param-name">facets</span></td><td><span class="param-type">FacetResult[]</span></td><td class="param-desc">Facet aggregations for the requested <code class="inline-code">facetKeys</code>. Absent when no facet keys were requested.</td></tr>
+                <tr><td><span class="param-name">stats</span></td><td><span class="param-type">SearchStats</span></td><td class="param-desc">Page and total result counts.</td></tr>
+                <tr><td><span class="param-name">nextPageToken</span></td><td><span class="param-type">string</span></td><td class="param-desc">Opaque cursor token. Present when more pages exist. Pass as <code class="inline-code">pageToken</code> in the next request. Absent on the final page.</td></tr>
+                <tr><td><span class="param-name">correctedQuery</span></td><td><span class="param-type">string</span></td><td class="param-desc">Spell-corrected query used by Vertex AI, if the original query contained a typo. Absent when no correction was applied.</td></tr>
+                <tr><td><span class="param-name">attributionToken</span></td><td><span class="param-type">string</span></td><td class="param-desc">Opaque token for analytics attribution. Include in downstream analytics events.</td></tr>
+                <tr><td><span class="param-name">redirectUri</span></td><td><span class="param-type">string</span></td><td class="param-desc">Redirect URL if a Vertex AI search rule triggered a redirect. Absent when no redirect applies.</td></tr>
+                <tr><td><span class="param-name">appliedControls</span></td><td><span class="param-type">string[]</span></td><td class="param-desc">Names of Vertex AI serving controls (boost, bury, filter rules) applied to this request.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="schema-tabs">
           <div class="schema-tab-header">
             <div class="schema-tab active">Response Example</div>
@@ -928,7 +969,12 @@
       <span class="t-key">"variants"</span>: [
         { <span class="t-key">"id"</span>: <span class="t-str">"prod-001-sz9"</span> },
         { <span class="t-key">"id"</span>: <span class="t-str">"prod-001-sz10"</span> }
-      ]
+      ],
+      <span class="t-key">"price"</span>: {                           <span class="t-cm">// null/absent when no price in catalog</span>
+        <span class="t-key">"currencyCode"</span>: <span class="t-str">"AUD"</span>,
+        <span class="t-key">"price"</span>: <span class="t-num">149.99</span>,
+        <span class="t-key">"originalPrice"</span>: <span class="t-num">199.99</span>          <span class="t-cm">// absent when no discount</span>
+      }
     }
   ],
   <span class="t-key">"facets"</span>: [
@@ -945,9 +991,10 @@
     <span class="t-key">"totalResults"</span>: <span class="t-num">157</span>,
     <span class="t-key">"offset"</span>: <span class="t-num">0</span>
   },
-  <span class="t-key">"correctedQuery"</span>: <span class="t-null">null</span>,           <span class="t-cm">// populated when Vertex AI corrects a typo</span>
-  <span class="t-key">"attributionToken"</span>: <span class="t-str">"AHRlcnJpZm..."</span>,  <span class="t-cm">// include in analytics events</span>
-  <span class="t-key">"redirectUri"</span>: <span class="t-null">null</span>,              <span class="t-cm">// populated when a search rule triggers a redirect</span>
+  <span class="t-key">"nextPageToken"</span>: <span class="t-str">"eyJwYWdlIjogMn0..."</span>,  <span class="t-cm">// absent on last page</span>
+  <span class="t-key">"correctedQuery"</span>: <span class="t-null">null</span>,               <span class="t-cm">// populated when Vertex AI corrects a typo</span>
+  <span class="t-key">"attributionToken"</span>: <span class="t-str">"AHRlcnJpZm..."</span>,    <span class="t-cm">// include in analytics events</span>
+  <span class="t-key">"redirectUri"</span>: <span class="t-null">null</span>,                 <span class="t-cm">// populated when a search rule triggers a redirect</span>
   <span class="t-key">"appliedControls"</span>: [<span class="t-str">"boost-new-arrivals"</span>]
 }</code></pre>
         </div>
@@ -1164,6 +1211,7 @@
                 <tr><td><span class="param-name">uri</span></td><td><span class="param-type">string</span></td><td class="param-desc">Canonical URL of the product page.</td></tr>
                 <tr><td><span class="param-name">attributes</span></td><td><span class="param-type">object</span></td><td class="param-desc">Key-value map of product attributes (e.g. color, brand, gender). Values are strings.</td></tr>
                 <tr><td><span class="param-name">variants</span></td><td><span class="param-type">VariantResult[]</span></td><td class="param-desc">List of product variants (size, colour combinations). Each variant has an <code class="inline-code">id</code>.</td></tr>
+                <tr><td><span class="param-name">price</span></td><td><span class="param-type">ProductPrice</span></td><td class="param-desc">Pricing information for the product. Omitted when no price data is available in the catalog.</td></tr>
               </tbody>
             </table>
           </div>
@@ -1193,6 +1241,21 @@
                 <tr><td><span class="param-name">returned</span></td><td><span class="param-type">integer</span></td><td class="param-desc">Number of products in the current page.</td></tr>
                 <tr><td><span class="param-name">totalResults</span></td><td><span class="param-type">integer</span></td><td class="param-desc">Total number of matching products across all pages.</td></tr>
                 <tr><td><span class="param-name">offset</span></td><td><span class="param-type">integer</span></td><td class="param-desc">Offset applied to this page of results.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ProductPrice -->
+        <h3 class="sub-title">ProductPrice</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:150px">Field</th><th style="width:90px">Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">currencyCode</span></td><td><span class="param-type">string</span></td><td class="param-desc">ISO 4217 currency code (e.g. <code class="inline-code">AUD</code>).</td></tr>
+                <tr><td><span class="param-name">price</span></td><td><span class="param-type">number</span></td><td class="param-desc">Current selling price.</td></tr>
+                <tr><td><span class="param-name">originalPrice</span></td><td><span class="param-type">number</span></td><td class="param-desc">Original pre-discount price. Omitted when no discount applies.</td></tr>
               </tbody>
             </table>
           </div>
