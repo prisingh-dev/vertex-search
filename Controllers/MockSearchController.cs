@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using VertexSearchApi.Config;
 using VertexSearchApi.DTOs.Request;
 using VertexSearchApi.DTOs.Response;
 using VertexSearchApi.Services.Context;
@@ -14,6 +16,7 @@ namespace VertexSearchApi.Controllers;
 [ApiController]
 [Route("api/v1")]
 [Produces("application/json")]
+[EnableRateLimiting(RateLimitOptions.Policies.Mock)]
 public class MockSearchController : ControllerBase
 {
     private readonly StepService<SearchContext> _mockStepService;
@@ -37,13 +40,13 @@ public class MockSearchController : ControllerBase
     [Consumes("application/json")]
     [ProducesResponseType(typeof(KeywordSearchResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
-    public KeywordSearchResponse SearchMock([FromBody] KeywordSearchRequest request)
+    public async Task<KeywordSearchResponse> SearchMock([FromBody] KeywordSearchRequest request)
     {
         _logger.LogInformation(
             "Mock keyword search: query='{Query}', visitorId='{VisitorId}'",
             request.Query, request.VisitorId);
 
         var context = new SearchContext { ApiRequest = request };
-        return _mockStepService.Execute(context).ApiResponse!;
+        return (await _mockStepService.ExecuteAsync(context)).ApiResponse!;
     }
 }

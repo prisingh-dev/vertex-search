@@ -25,13 +25,14 @@ public class SearchResponseMapper
 
         return new KeywordSearchResponse
         {
-            Products       = products.Count > 0 ? products : null,
-            Facets         = facets.Count > 0 ? facets : null,
-            Stats          = new SearchStats(products.Count, response.TotalSize, resolvedOffset),
-            CorrectedQuery = NullIfEmpty(response.CorrectedQuery),
+            Products         = products.Count > 0 ? products : null,
+            Facets           = facets.Count > 0 ? facets : null,
+            Stats            = new SearchStats(products.Count, response.TotalSize, resolvedOffset),
+            NextPageToken    = NullIfEmpty(response.NextPageToken),
+            CorrectedQuery   = NullIfEmpty(response.CorrectedQuery),
             AttributionToken = NullIfEmpty(response.AttributionToken),
-            RedirectUri    = NullIfEmpty(response.RedirectUri),
-            AppliedControls = response.AppliedControls.Count > 0
+            RedirectUri      = NullIfEmpty(response.RedirectUri),
+            AppliedControls  = response.AppliedControls.Count > 0
                 ? [.. response.AppliedControls] : null
         };
     }
@@ -63,6 +64,14 @@ public class SearchResponseMapper
             .Select(vid => new VariantResult(vid))
             .ToList();
 
+        var pi = product.PriceInfo;
+        ProductPrice? price = pi is { Price: > 0 }
+            ? new ProductPrice(
+                NullIfEmpty(pi.CurrencyCode),
+                pi.Price,
+                pi.OriginalPrice > 0 && pi.OriginalPrice != pi.Price ? pi.OriginalPrice : null)
+            : null;
+
         return new ProductResult
         {
             Id         = id,
@@ -70,7 +79,8 @@ public class SearchResponseMapper
             Categories = product.Categories.Count > 0 ? [.. product.Categories] : null,
             Uri        = NullIfEmpty(product.Uri),
             Attributes = attributes.Count > 0 ? attributes : null,
-            Variants   = variants.Count > 0 ? variants : null
+            Variants   = variants.Count > 0 ? variants : null,
+            Price      = price
         };
     }
 

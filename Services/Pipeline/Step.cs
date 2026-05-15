@@ -15,14 +15,14 @@ public abstract class Step<T> where T : class
 
     public void SetNextStep(Step<T> next) => _nextStep = next;
 
-    public void Handle(T context)
+    public async Task HandleAsync(T context)
     {
         ArgumentNullException.ThrowIfNull(context);
         var stepName = GetType().Name;
         var sw = Stopwatch.StartNew();
         try
         {
-            InnerHandle(context);
+            await InnerHandleAsync(context);
         }
         finally
         {
@@ -32,8 +32,9 @@ public abstract class Step<T> where T : class
             else
                 _logger.LogInformation("[LATENCY] {Step} took {Ms}ms", stepName, sw.ElapsedMilliseconds);
         }
-        _nextStep?.Handle(context);
+        if (_nextStep is not null)
+            await _nextStep.HandleAsync(context);
     }
 
-    protected abstract void InnerHandle(T context);
+    protected abstract Task InnerHandleAsync(T context);
 }

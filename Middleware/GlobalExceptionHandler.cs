@@ -30,6 +30,9 @@ public class GlobalExceptionHandler : IExceptionHandler
             SearchServiceException ex =>
                 (StatusCodes.Status503ServiceUnavailable, ex.Message),
 
+            AutocompleteServiceException ex =>
+                (StatusCodes.Status503ServiceUnavailable, ex.Message),
+
             RpcException rpcEx =>
                 (MapGrpcStatus(rpcEx.StatusCode), rpcEx.Status.Detail),
 

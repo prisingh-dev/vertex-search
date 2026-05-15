@@ -1,13 +1,15 @@
 namespace VertexSearchApi.DTOs.Request;
 
-public class KeywordSearchRequest
+public record KeywordSearchRequest
 {
-    public string? Query { get; set; }
-    public string? VisitorId { get; set; }
-    public int? PageSize { get; set; }
-    public int? Offset { get; set; }
-    public string? OrderBy { get; set; }
-    public string? Filter { get; set; }
-    public List<string>? FacetKeys { get; set; }
-    public string? QueryExpansionCondition { get; set; }
+    public string? Query { get; init; }
+    public string? VisitorId { get; init; }
+    public int? PageSize { get; init; }
+    public int? Offset { get; init; }
+    public string? PageToken { get; init; }
+    public string? OrderBy { get; init; }
+    public string? Filter { get; init; }
+    public List<string>? FacetKeys { get; init; }
+    public string? QueryExpansionCondition { get; init; }
+    public string? StoreId { get; init; }
 }

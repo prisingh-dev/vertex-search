@@ -13,7 +13,7 @@ public class ValidateRequestStep : Step<SearchContext>
     public ValidateRequestStep(ILogger<ValidateRequestStep> logger, IOptions<SearchOptions> opts)
         : base(logger) => _opts = opts.Value;
 
-    protected override void InnerHandle(SearchContext context)
+    protected override Task InnerHandleAsync(SearchContext context)
     {
         var req = context.ApiRequest
             ?? throw new InvalidSearchRequestException("Request body is required");
@@ -34,5 +34,7 @@ public class ValidateRequestStep : Step<SearchContext>
 
         if (req.Offset.HasValue && req.Offset < 0)
             throw new InvalidSearchRequestException("offset must be >= 0");
+
+        return Task.CompletedTask;
     }
 }

@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vertex AI Retail Search API — Technical Documentation</title>
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --navy:       #0f172a;
+      --navy-md:    #1e293b;
+      --navy-lt:    #334155;
+      --slate:      #475569;
+      --muted:      #64748b;
+      --border:     #e2e8f0;
+      --bg:         #f8fafc;
+      --white:      #ffffff;
+      --blue:       #2563eb;
+      --blue-dk:    #1d4ed8;
+      --blue-lt:    #eff6ff;
+      --blue-bd:    #bfdbfe;
+      --teal:       #0d9488;
+      --teal-dk:    #0f766e;
+      --teal-lt:    #f0fdfa;
+      --teal-bd:    #99f6e4;
+      --green:      #16a34a;
+      --green-lt:   #f0fdf4;
+      --green-bd:   #bbf7d0;
+      --red:        #dc2626;
+      --red-lt:     #fef2f2;
+      --red-bd:     #fecaca;
+      --amber:      #d97706;
+      --amber-lt:   #fffbeb;
+      --amber-bd:   #fde68a;
+      --purple:     #7c3aed;
+      --purple-lt:  #f5f3ff;
+      --radius-sm:  6px;
+      --radius:     10px;
+      --radius-lg:  16px;
+      --shadow-sm:  0 1px 2px rgba(0,0,0,.05);
+      --shadow:     0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+      --shadow-lg:  0 4px 6px rgba(0,0,0,.07), 0 10px 40px rgba(0,0,0,.1);
+    }
+
+    /* ── RESET ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--navy-md);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ──────────────────────────────────────────── */
+    .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+    /* ── SIDEBAR ─────────────────────────────────────────── */
+    .sidebar {
+      background: var(--navy);
+      color: rgba(255,255,255,.7);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.1) transparent;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
+
+    .sb-brand {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .sb-product {
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      margin-bottom: 6px;
+    }
+    .sb-title {
+      font-size: .98rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.25;
+    }
+    .sb-version {
+      margin-top: 8px;
+      display: inline-block;
+      font-size: .67rem;
+      font-weight: 700;
+      background: rgba(37,99,235,.35);
+      color: #93c5fd;
+      border: 1px solid rgba(37,99,235,.4);
+      border-radius: 10px;
+      padding: 2px 9px;
+    }
+    .sb-nav { padding: 16px 0 32px; flex: 1; }
+    .sb-group {
+      padding: 16px 24px 8px;
+      font-size: .67rem;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.3);
+    }
+    .sb-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 24px;
+      font-size: .83rem;
+      font-weight: 500;
+      color: rgba(255,255,255,.6);
+      text-decoration: none;
+      transition: color .15s, background .15s;
+      border-left: 2px solid transparent;
+    }
+    .sb-link:hover { color: #fff; background: rgba(255,255,255,.05); }
+    .sb-link.active { color: #fff; border-left-color: var(--blue); background: rgba(37,99,235,.1); font-weight: 600; }
+    .sb-link .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor; opacity: .4; flex-shrink: 0;
+    }
+    .sb-method {
+      font-size: .6rem; font-weight: 800;
+      padding: 1px 6px; border-radius: 4px;
+      letter-spacing: .3px; flex-shrink: 0;
+    }
+    .sb-method.post { background: rgba(37,99,235,.3); color: #93c5fd; }
+    .sb-method.get  { background: rgba(13,148,136,.3); color: #5eead4; }
+
+    /* ── MAIN CONTENT ────────────────────────────────────── */
+    .main { min-width: 0; background: var(--bg); }
+
+    /* ── TOP BAR ─────────────────────────────────────────── */
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 8px; font-size: .83rem; color: var(--muted); }
+    .topbar-left .sep { color: var(--border); }
+    .topbar-left .current { color: var(--navy-md); font-weight: 600; }
+    .base-url {
+      font-family: monospace;
+      font-size: .8rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 12px;
+      color: var(--slate);
+    }
+
+    /* ── CONTENT SECTIONS ────────────────────────────────── */
+    .content { padding: 56px; max-width: 900px; }
+
+    .section { margin-bottom: 80px; scroll-margin-top: 72px; }
+
+    /* ── TYPOGRAPHY ──────────────────────────────────────── */
+    .page-heading {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -.5px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .page-sub {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 620px;
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+    h2.sec-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -.3px;
+      margin-bottom: 6px;
+    }
+    .sec-desc { font-size: .92rem; color: var(--slate); margin-bottom: 24px; line-height: 1.6; }
+    h3.sub-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy-md);
+      margin: 24px 0 10px;
+    }
+    p { font-size: .93rem; color: var(--slate); margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── DIVIDER ─────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 0 56px;
+    }
+    .section-rule {
+      height: 1px;
+      background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+      margin-bottom: 28px;
+    }
+
+    /* ── ENDPOINT HEADER ─────────────────────────────────── */
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .method-badge {
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .5px;
+      padding: 5px 14px;
+      border-radius: 6px;
+    }
+    .method-badge.post { background: var(--blue-lt); color: var(--blue-dk); border: 1px solid var(--blue-bd); }
+    .method-badge.get  { background: var(--teal-lt); color: var(--teal-dk); border: 1px solid var(--teal-bd); }
+    .endpoint-path {
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .endpoint-desc { font-size: .9rem; color: var(--slate); margin-bottom: 24px; }
+
+    /* ── STATUS BADGE ────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .badge.production { background: var(--green-lt); color: var(--green); border: 1px solid var(--green-bd); }
+    .badge.new        { background: var(--teal-lt);  color: var(--teal);  border: 1px solid var(--teal-bd);  }
+    .badge.required   { background: var(--red-lt);   color: var(--red);   border: 1px solid var(--red-bd);   }
+    .badge.optional   { background: var(--bg);       color: var(--muted); border: 1px solid var(--border);   }
+
+    /* ── PANELS / CARDS ──────────────────────────────────── */
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .panel-header {
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--slate);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-body { padding: 22px; }
+
+    /* ── INFO / CALLOUT ──────────────────────────────────── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 18px 0;
+      font-size: .88rem;
+      line-height: 1.6;
+      display: flex;
+      gap: 12px;
+    }
+    .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .callout-body {}
+    .callout-body b { display: block; font-size: .88rem; margin-bottom: 3px; }
+    .callout.info   { background: var(--blue-lt); border: 1px solid var(--blue-bd); color: var(--blue-dk); }
+    .callout.tip    { background: var(--teal-lt); border: 1px solid var(--teal-bd); color: var(--teal-dk); }
+    .callout.note   { background: var(--amber-lt); border: 1px solid var(--amber-bd); color: #92400e; }
+    .callout.success{ background: var(--green-lt); border: 1px solid var(--green-bd); color: #166534; }
+
+    /* ── PARAMETER TABLE ─────────────────────────────────── */
+    .param-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    .param-table thead tr { border-bottom: 2px solid var(--border); }
+    .param-table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .param-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--navy-md);
+    }
+    .param-table tr:last-child td { border-bottom: none; }
+    .param-table tr:hover td { background: var(--bg); }
+    .param-name {
+      font-family: monospace;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .param-type {
+      font-family: monospace;
+      font-size: .78rem;
+      color: var(--purple);
+      background: var(--purple-lt);
+      padding: 1px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .param-desc { font-size: .85rem; color: var(--slate); line-height: 1.55; }
+    .param-default {
+      font-family: monospace;
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
+    /* ── CODE / PRE ──────────────────────────────────────── */
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      font-size: .82rem;
+      line-height: 1.75;
+      overflow-x: auto;
+      margin: 0;
+      font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+    }
+    code {
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: .83em;
+    }
+    .inline-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-family: monospace;
+      font-size: .83em;
+      color: var(--navy-md);
+    }
+    /* syntax tokens */
+    .t-key  { color: #93c5fd; }
+    .t-str  { color: #86efac; }
+    .t-num  { color: #fb7185; }
+    .t-bool { color: #fbbf24; }
+    .t-null { color: #94a3b8; }
+    .t-cm   { color: #475569; font-style: italic; }
+    .t-url  { color: #5eead4; }
+    .t-hdr  { color: #fbbf24; }
+
+    /* ── RESPONSE STATUS ─────────────────────────────────── */
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: .88rem;
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-code {
+      font-family: monospace;
+      font-size: .88rem;
+      font-weight: 800;
+      min-width: 40px;
+    }
+    .status-code.s2 { color: var(--green); }
+    .status-code.s4 { color: var(--amber); }
+    .status-code.s5 { color: var(--red); }
+    .status-text { color: var(--navy-md); font-weight: 600; min-width: 180px; }
+    .status-desc { color: var(--slate); font-size: .84rem; }
+
+    /* ── FLOW DIAGRAM ────────────────────────────────────── */
+    .flow-diagram {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    .flow-title {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      min-width: 640px;
+    }
+    .flow-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      max-width: 148px;
+    }
+    .flow-box {
+      width: 100%;
+      border-radius: 10px;
+      padding: 14px 12px;
+      text-align: center;
+      font-size: .76rem;
+      font-weight: 700;
+      line-height: 1.35;
+      border: 1.5px solid;
+    }
+    .flow-box-label {
+      font-size: .67rem;
+      color: var(--muted);
+      text-align: center;
+      font-weight: 500;
+    }
+    .flow-box.n-client { background: var(--blue-lt); border-color: var(--blue-bd); color: var(--blue-dk); }
+    .flow-box.n-api    { background: #f5f3ff; border-color: #ddd6fe; color: #5b21b6; }
+    .flow-box.n-step   { background: var(--bg); border-color: var(--border); color: var(--navy-md); }
+    .flow-box.n-gcp    { background: var(--teal-lt); border-color: var(--teal-bd); color: var(--teal-dk); }
+    .flow-box.n-resp   { background: var(--green-lt); border-color: var(--green-bd); color: var(--green); }
+    .flow-arrow {
+      color: var(--border);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      padding: 0 6px;
+      margin-bottom: 22px;
+    }
+
+    /* ── ARCHITECTURE OVERVIEW ───────────────────────────── */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+    .arch-cell {
+      background: var(--white);
+      padding: 24px;
+    }
+    .arch-cell-label {
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .arch-cell-label.blue   { color: var(--blue); }
+    .arch-cell-label.teal   { color: var(--teal); }
+    .arch-cell-label.purple { color: var(--purple); }
+    .arch-cell h4 { font-size: .92rem; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .arch-cell p  { font-size: .82rem; color: var(--slate); line-height: 1.5; margin: 0; }
+
+    /* ── ENDPOINT CARD ───────────────────────────────────── */
+    .ep-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .ep-summary {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .ep-summary.featured { border-color: var(--teal-bd); background: var(--teal-lt); }
+    .ep-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .ep-path-text { font-family: monospace; font-size: .92rem; font-weight: 700; color: var(--navy); }
+    .ep-summary-desc { font-size: .84rem; color: var(--slate); line-height: 1.55; }
+
+    /* ── SCHEMA BLOCK ────────────────────────────────────── */
+    .schema-tabs {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .schema-tab-header {
+      display: flex;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .schema-tab {
+      padding: 10px 20px;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      cursor: default;
+    }
+    .schema-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .schema-tab.active.teal-tab { color: var(--teal); border-bottom-color: var(--teal); }
+
+    /* ── INLINE GRID ─────────────────────────────────────── */
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:700px) { .g2, .ep-summary-grid, .arch-grid { grid-template-columns: 1fr; } }
+
+    /* ── TECH STACK TABLE ────────────────────────────────── */
+    .stack-table { width: 100%; border-collapse: collapse; }
+    .stack-table td { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: .88rem; vertical-align: top; }
+    .stack-table tr:last-child td { border-bottom: none; }
+    .stack-table td:first-child { font-weight: 700; color: var(--navy-md); width: 200px; }
+    .stack-table td:last-child { color: var(--slate); }
+
+    /* ── PRINT ───────────────────────────────────────────── */
+    @media print {
+      .sidebar, .topbar { display: none; }
+      .layout { display: block; }
+      .content { padding: 24px; max-width: 100%; }
+      pre { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-product">Woolworths · Retail Technology</div>
+      <div class="sb-title">Vertex AI Retail<br/>Search API</div>
+      <span class="sb-version">v1.0 · .NET 10</span>
+    </div>
+    <nav class="sb-nav">
+
+      <div class="sb-group">Getting Started</div>
+      <a href="#overview"        class="sb-link active"><span class="dot"></span> Overview</a>
+      <a href="#authentication"  class="sb-link"><span class="dot"></span> Authentication</a>
+      <a href="#architecture"    class="sb-link"><span class="dot"></span> Architecture</a>
+
+      <div class="sb-group">API Reference</div>
+      <a href="#search"          class="sb-link"><span class="sb-method post">POST</span> Product Search</a>
+      <a href="#autocomplete"    class="sb-link"><span class="sb-method get">GET</span> Autocomplete</a>
+
+      <div class="sb-group">Reference</div>
+      <a href="#data-models"     class="sb-link"><span class="dot"></span> Data Models</a>
+      <a href="#configuration"   class="sb-link"><span class="dot"></span> Configuration</a>
+      <a href="#errors"          class="sb-link"><span class="dot"></span> Error Reference</a>
+
+    </nav>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span>Vertex AI Retail Search API</span>
+        <span class="sep">/</span>
+        <span class="current">Technical Documentation</span>
+      </div>
+      <code class="base-url">Base URL: https://&lt;host&gt;/api/v1</code>
+    </div>
+
+    <div class="content">
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- OVERVIEW                                          -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="section" id="overview">
+
+        <div class="page-heading">Vertex AI Retail Search API</div>
+        <div class="page-sub">
+           REST API exposing Google Cloud Vertex AI Retail capabilities — enabling intelligent product search and real-time typeahead autocomplete for e-commerce applications.
+        </div>
+
+        <div class="ep-summary-grid">
+          <div class="ep-summary">
+            <div class="ep-row">
+              <span class="method-badge post">POST</span>
+              <span class="ep-path-text">/api/v1/search</span>
+              
+            </div>
+            <div class="ep-summary-desc">
+              Full-text product search against the Vertex AI Retail catalog. Supports keyword ranking, faceting, sorting, filtering, and store-scoped results.
+            </div>
+          </div>
+          <div class="ep-summary featured">
+            <div class="ep-row">
+              <span class="method-badge get">GET</span>
+              <span class="ep-path-text">/api/v1/autocomplete</span>
+              
+            </div>
+            <div class="ep-summary-desc">
+              Real-time typeahead suggestions powered by Vertex AI Retail Completion. Returns ranked suggestions as the user types.
+            </div>
+          </div>
+        </div>
+
+        <div class="divider" style="margin-top:0"></div>
+
+        <h3 class="sub-title">Technology Stack</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding: 8px 22px">
+            <table class="stack-table">
+              <tbody>
+                <tr><td>Runtime</td><td>.NET 10 / ASP.NET Core — cross-platform web framework</td></tr>
+                <tr><td>Google Cloud SDK</td><td>Google.Cloud.Retail.V2 v2.16.0 — gRPC-based client for Vertex AI Retail APIs</td></tr>
+                <tr><td>Search Backend</td><td>Vertex AI Retail Search (<code class="inline-code">SearchServiceClient</code>)</td></tr>
+                <tr><td>Autocomplete Backend</td><td>Vertex AI Retail Completion (<code class="inline-code">CompletionServiceClient</code>)</td></tr>
+                <tr><td>Protocol</td><td>gRPC over HTTP/2 — binary Protocol Buffers serialisation</td></tr>
+                <tr><td>API Documentation</td><td>OpenAPI 3.0 / Swagger UI at <code class="inline-code">/swagger</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- AUTHENTICATION                                    -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="section" id="authentication">
+        <div class="section-rule"></div>
+
+        <h2 class="sec-title">Authentication</h2>
+        <div class="sec-desc">
+          All requests to live endpoints are authenticated via Google Cloud identity. The API uses <strong>Application Default Credentials (ADC)</strong> — credentials are resolved once at service startup and shared across all requests.
+        </div>
+
+        <div class="g2">
+          <div class="panel">
+            <div class="panel-header">Developer / Workstation</div>
+            <div class="panel-body">
+              <p>Authenticate using the Google Cloud CLI:</p>
+              <pre><code>gcloud auth application-default login</code></pre>
+              <p style="margin-top:12px">Credentials are stored locally and automatically resolved by the SDK.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">Production / GCP Infrastructure</div>
+            <div class="panel-body">
+              <p>On Cloud Run, GKE, or Compute Engine, the attached <strong>Service Account</strong> is used automatically — no credential files required.</p>
+              <div class="callout note" style="margin-top:12px">
+                <div class="callout-icon">⚑</div>
+                <div class="callout-body"><b>Required IAM Role</b>Assign <code class="inline-code">roles/retail.viewer</code> (minimum read access) to the service account.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <div class="callout-icon">ℹ</div>
+          <div class="callout-body">
+            <b>No API Key Required</b>
+            Authentication is handled at the infrastructure level via GCP identity. Client applications call this REST API directly — they do not interact with Google Cloud credentials.
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- ARCHITECTURE                                      -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="section" id="architecture">
+        <div class="section-rule"></div>
+
+        <h2 class="sec-title">Architecture</h2>
+        <div class="sec-desc">
+          The API is built on a chain-of-responsibility pipeline pattern. Each request passes through a fixed sequence of steps — validation, request translation, GCP invocation, and response translation — before the result is returned to the caller.
+        </div>
+
+        <div class="arch-grid">
+          <div class="arch-cell">
+            <div class="arch-cell-label blue">Layer 1 — Gateway</div>
+            <h4>Controller</h4>
+            <p>Receives the HTTP request, enforces content negotiation, delegates to the pipeline, and serialises the final response as JSON.</p>
+          </div>
+          <div class="arch-cell">
+            <div class="arch-cell-label purple">Layer 2 — Pipeline</div>
+            <h4>Step Chain</h4>
+            <p>Ordered sequence of discrete steps: validate inputs, translate to GCP format, invoke Google Cloud, translate the response back.</p>
+          </div>
+          <div class="arch-cell">
+            <div class="arch-cell-label teal">Layer 3 — GCP</div>
+            <h4>Vertex AI Retail</h4>
+            <p>Google-managed search and completion services accessed via gRPC. Two dedicated SDK clients — one per service — maintained as application singletons.</p>
+          </div>
+        </div>
+
+        <!-- Search flow -->
+        <div class="flow-diagram" style="margin-bottom:16px">
+          <div class="flow-title">Product Search — Request Flow</div>
+          <div class="flow-row">
+            <div class="flow-node">
+              <div class="flow-box n-client">Client<br/>Application</div>
+              <div class="flow-box-label">POST /api/v1/search</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-api">Input<br/>Validation</div>
+              <div class="flow-box-label">query · visitorId </div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-step">Request<br/>Translation</div>
+             
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-gcp">Vertex AI<br/>Retail Search</div>
+              <div class="flow-box-label">SearchServiceClient<br/>gRPC</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-step">Response<br/>Translation</div>
+              <div class="flow-box-label">SearchResponse → DTO</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-resp">JSON<br/>Response</div>
+              <div class="flow-box-label">products · facets · stats</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Autocomplete flow -->
+        <div class="flow-diagram">
+          <div class="flow-title">Autocomplete — Request Flow</div>
+          <div class="flow-row">
+            <div class="flow-node">
+              <div class="flow-box n-client">Client<br/>Application</div>
+              <div class="flow-box-label">GET /api/v1/autocomplete</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-api">Input<br/>Validation</div>
+              <div class="flow-box-label">query · visitorId · maxSuggestions</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-step">Request<br/>Translation</div>
+              <div class="flow-box-label">query lowercased<br/>→ CompleteQueryRequest</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-gcp">Vertex AI<br/>Completion</div>
+              <div class="flow-box-label">CompletionServiceClient<br/>gRPC</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-step">Response<br/>Translation</div>
+              <div class="flow-box-label">CompleteQueryResponse → DTO</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+              <div class="flow-box n-resp">JSON<br/>Response</div>
+              <div class="flow-box-label">suggestions · attributionToken</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- SEARCH API                                        -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="section" id="search">
+        <div class="section-rule"></div>
+
+        <div class="endpoint-header">
+          <span class="method-badge post">POST</span>
+          <span class="endpoint-path">/api/v1/search</span>
+          <span class="badge production">● Production</span>
+        </div>
+        <div class="endpoint-desc">
+          Executes a full-text keyword search against the Vertex AI Retail product catalog. Returns a ranked list of matching products alongside facet aggregations, pagination statistics, and contextual metadata.
+        </div>
+
+        <!-- Request -->
+        <h3 class="sub-title">Request</h3>
+        <div class="panel">
+          <div class="panel-header">
+            <span>Request Body</span>
+            <span style="font-weight:400;color:var(--muted)">Content-Type: application/json</span>
+          </div>
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead>
+                <tr>
+                  <th style="width:170px">Field</th>
+                  <th style="width:90px">Type</th>
+                  <th style="width:90px">Required</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="param-name">query</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge required">Required</span></td>
+                  <td class="param-desc">The search term entered by the user. Must be non-empty.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">visitorId</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge required">Required</span></td>
+                  <td class="param-desc">Unique visitor or session identifier. Used by Vertex AI for personalisation and analytics attribution. Typically a cookie or device ID.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">pageSize</span></td>
+                  <td><span class="param-type">integer</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">Number of products to return per page. <span class="param-default">Default: 20. Range: 1–100.</span></td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">offset</span></td>
+                  <td><span class="param-type">integer</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">Zero-based index of the first result to return. Used for offset pagination. <span class="param-default">Default: 0.</span></td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">orderBy</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">Sort order alias. Accepted values: <code class="inline-code">relevance</code>, <code class="inline-code">price_low_to_high</code>, <code class="inline-code">price_high_to_low</code>, <code class="inline-code">newest</code>. Defaults to relevance ranking.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">filter</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">Vertex AI Retail filter expression applied to the result set. Example: <code class="inline-code">availability: IN_STOCK</code>.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">facetKeys</span></td>
+                  <td><span class="param-type">string[]</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">List of facet dimension aliases to return with the response. Accepted values: <code class="inline-code">color</code>, <code class="inline-code">size</code>, <code class="inline-code">brand</code>, <code class="inline-code">category</code>, <code class="inline-code">price</code>.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">queryExpansionCondition</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">Controls Vertex AI query expansion behaviour. <code class="inline-code">AUTO</code> allows the engine to broaden the query when few results are found. <code class="inline-code">DISABLED</code> enforces strict matching. <span class="param-default">Default: AUTO.</span></td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">storeId</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">Store identifier used to scope search results to a specific physical location. Maps to <code class="inline-code">PlaceId</code> in the Vertex AI Retail API. When omitted, results are returned from the full catalog.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Request example -->
+        <div class="schema-tabs">
+          <div class="schema-tab-header">
+            <div class="schema-tab active">Request Example</div>
+          </div>
+          <pre><code><span class="t-cm">// POST /api/v1/search</span>
+<span class="t-cm">// Content-Type: application/json</span>
+
+{
+  <span class="t-key">"query"</span>: <span class="t-str">"red running shoes"</span>,
+  <span class="t-key">"visitorId"</span>: <span class="t-str">"session-a1b2c3"</span>,
+  <span class="t-key">"pageSize"</span>: <span class="t-num">20</span>,
+  <span class="t-key">"offset"</span>: <span class="t-num">0</span>,
+  <span class="t-key">"orderBy"</span>: <span class="t-str">"price_low_to_high"</span>,
+  <span class="t-key">"filter"</span>: <span class="t-str">"availability: IN_STOCK"</span>,
+  <span class="t-key">"facetKeys"</span>: [<span class="t-str">"color"</span>, <span class="t-str">"brand"</span>, <span class="t-str">"size"</span>],
+  <span class="t-key">"queryExpansionCondition"</span>: <span class="t-str">"AUTO"</span>,
+  <span class="t-key">"storeId"</span>: <span class="t-str">"store-042"</span>     <span class="t-cm">// optional — scope to specific store</span>
+}</code></pre>
+        </div>
+
+        <!-- Response -->
+        <h3 class="sub-title">Response — 200 OK</h3>
+        <div class="schema-tabs">
+          <div class="schema-tab-header">
+            <div class="schema-tab active">Response Example</div>
+          </div>
+          <pre><code>{
+  <span class="t-key">"products"</span>: [
+    {
+      <span class="t-key">"id"</span>: <span class="t-str">"prod-001"</span>,
+      <span class="t-key">"title"</span>: <span class="t-str">"Men's Trail Running Shoes"</span>,
+      <span class="t-key">"categories"</span>: [<span class="t-str">"Footwear"</span>, <span class="t-str">"Footwear &gt; Running"</span>],
+      <span class="t-key">"uri"</span>: <span class="t-str">"https://example.com/products/001"</span>,
+      <span class="t-key">"attributes"</span>: {
+        <span class="t-key">"color"</span>: <span class="t-str">"Red"</span>,
+        <span class="t-key">"brand"</span>: <span class="t-str">"Nike"</span>,
+        <span class="t-key">"gender"</span>: <span class="t-str">"Men"</span>
+      },
+      <span class="t-key">"variants"</span>: [
+        { <span class="t-key">"id"</span>: <span class="t-str">"prod-001-sz9"</span> },
+        { <span class="t-key">"id"</span>: <span class="t-str">"prod-001-sz10"</span> }
+      ]
+    }
+  ],
+  <span class="t-key">"facets"</span>: [
+    {
+      <span class="t-key">"key"</span>: <span class="t-str">"colorFamilies"</span>,
+      <span class="t-key">"values"</span>: [
+        { <span class="t-key">"value"</span>: <span class="t-str">"Red"</span>,  <span class="t-key">"count"</span>: <span class="t-num">42</span> },
+        { <span class="t-key">"value"</span>: <span class="t-str">"Blue"</span>, <span class="t-key">"count"</span>: <span class="t-num">35</span> }
+      ]
+    }
+  ],
+  <span class="t-key">"stats"</span>: {
+    <span class="t-key">"returned"</span>: <span class="t-num">20</span>,
+    <span class="t-key">"totalResults"</span>: <span class="t-num">157</span>,
+    <span class="t-key">"offset"</span>: <span class="t-num">0</span>
+  },
+  <span class="t-key">"correctedQuery"</span>: <span class="t-null">null</span>,           <span class="t-cm">// populated when Vertex AI corrects a typo</span>
+  <span class="t-key">"attributionToken"</span>: <span class="t-str">"AHRlcnJpZm..."</span>,  <span class="t-cm">// include in analytics events</span>
+  <span class="t-key">"redirectUri"</span>: <span class="t-null">null</span>,              <span class="t-cm">// populated when a search rule triggers a redirect</span>
+  <span class="t-key">"appliedControls"</span>: [<span class="t-str">"boost-new-arrivals"</span>]
+}</code></pre>
+        </div>
+
+        <!-- StoreId callout -->
+        <div class="callout tip">
+          <div class="callout-icon">ℹ</div>
+          <div class="callout-body">
+            <b>Store-Scoped Search</b>
+            Optional. An id corresponding to a place, such as a store id or region id. When specified, we use the price from the local inventory with the matching product's <code class="inline-code">LocalInventory.place_id</code> for revenue optimization.
+          </div>
+        </div>
+
+        <!-- Response status codes -->
+        <h3 class="sub-title">Response Status Codes</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding: 4px 22px">
+            <div class="status-row">
+              <span class="status-code s2">200</span>
+              <span class="status-text">OK</span>
+              <span class="status-desc">Search completed successfully. Results returned in body.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">400</span>
+              <span class="status-text">Bad Request</span>
+              <span class="status-desc">Missing or invalid field — <code class="inline-code">query</code>, <code class="inline-code">visitorId</code>, <code class="inline-code">pageSize</code> out of range, or malformed JSON body.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">401</span>
+              <span class="status-text">Unauthorized</span>
+              <span class="status-desc">The service's GCP credentials are missing or expired.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">403</span>
+              <span class="status-text">Forbidden</span>
+              <span class="status-desc">The service account does not have the required IAM permissions on the Retail catalog.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">404</span>
+              <span class="status-text">Not Found</span>
+              <span class="status-desc">The configured catalog, branch, or serving config does not exist in the GCP project.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">429</span>
+              <span class="status-text">Too Many Requests</span>
+              <span class="status-desc">Vertex AI Retail API quota has been exceeded.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s5">503</span>
+              <span class="status-text">Service Unavailable</span>
+              <span class="status-desc">Vertex AI Retail Search is unavailable or the gRPC call failed.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- AUTOCOMPLETE API                                  -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="section" id="autocomplete">
+        <div class="section-rule"></div>
+
+        <div class="endpoint-header">
+          <span class="method-badge get">GET</span>
+          <span class="endpoint-path">/api/v1/autocomplete</span>
+          <span class="badge new">● New</span>
+        </div>
+        <div class="endpoint-desc">
+          Returns typeahead completion suggestions from the Vertex AI Retail Completion service. Designed to be called on each keystroke as the user types a search query, enabling instant suggestion dropdowns. The query is automatically normalised to lowercase before being sent to Google Cloud.
+        </div>
+
+        <!-- Request parameters -->
+        <h3 class="sub-title">Query Parameters</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead>
+                <tr>
+                  <th style="width:170px">Parameter</th>
+                  <th style="width:90px">Type</th>
+                  <th style="width:90px">Required</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="param-name">query</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge required">Required</span></td>
+                  <td class="param-desc">The partial search term to complete. Automatically converted to lowercase before being forwarded to Vertex AI, ensuring case-insensitive suggestion matching.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">visitorId</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="badge required">Required</span></td>
+                  <td class="param-desc">Unique visitor or session identifier. Used by Vertex AI for personalised suggestion ranking and analytics.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">maxSuggestions</span></td>
+                  <td><span class="param-type">integer</span></td>
+                  <td><span class="badge optional">Optional</span></td>
+                  <td class="param-desc">Maximum number of suggestions to return. <span class="param-default">Default: 10. Range: 1–20.</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Request example -->
+        <div class="schema-tabs">
+          <div class="schema-tab-header">
+            <div class="schema-tab active teal-tab">Request Example</div>
+          </div>
+          <pre><code><span class="t-cm">// GET /api/v1/autocomplete</span>
+<span class="t-hdr">?query</span>=<span class="t-str">running</span>
+<span class="t-hdr">&visitorId</span>=<span class="t-str">session-a1b2c3</span>
+<span class="t-hdr">&maxSuggestions</span>=<span class="t-num">5</span>
+
+<span class="t-cm">// Full URL example:</span>
+<span class="t-url">GET /api/v1/autocomplete?query=running&visitorId=session-a1b2c3&maxSuggestions=5</span></code></pre>
+        </div>
+
+        <!-- Behaviour notes -->
+        <div class="callout tip">
+          <div class="callout-icon">ℹ</div>
+          <div class="callout-body">
+            <b>Query Normalisation</b>
+            The value of <code class="inline-code">query</code> is automatically converted to lowercase before being sent to Vertex AI. This ensures that "Running", "RUNNING", and "running" all return the same suggestions. The original casing sent by the client does not affect results.
+          </div>
+        </div>
+
+        <!-- Response -->
+        <h3 class="sub-title">Response — 200 OK</h3>
+        <div class="schema-tabs">
+          <div class="schema-tab-header">
+            <div class="schema-tab active teal-tab">Response Example</div>
+          </div>
+          <pre><code>{
+  <span class="t-key">"suggestions"</span>: [
+    { <span class="t-key">"suggestion"</span>: <span class="t-str">"running shoes"</span> },
+    { <span class="t-key">"suggestion"</span>: <span class="t-str">"running tights"</span> },
+    { <span class="t-key">"suggestion"</span>: <span class="t-str">"running jacket"</span> },
+    { <span class="t-key">"suggestion"</span>: <span class="t-str">"running socks"</span> },
+    { <span class="t-key">"suggestion"</span>: <span class="t-str">"running shorts"</span> }
+  ],
+  <span class="t-key">"attributionToken"</span>: <span class="t-str">"AHRlcnJpZmljLXRva2Vu..."</span>
+}</code></pre>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-icon">ℹ</div>
+          <div class="callout-body">
+            <b>Attribution Token</b>
+            When a user selects a suggestion and proceeds to a full search, include the <code class="inline-code">attributionToken</code> from the autocomplete response in the subsequent search event. This informs Vertex AI that the search originated from a completion suggestion, enabling improved ranking and analytics reporting.
+          </div>
+        </div>
+
+        <!-- Response status codes -->
+        <h3 class="sub-title">Response Status Codes</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding: 4px 22px">
+            <div class="status-row">
+              <span class="status-code s2">200</span>
+              <span class="status-text">OK</span>
+              <span class="status-desc">Suggestions returned successfully. May return an empty <code class="inline-code">suggestions</code> array if no matches are found.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">400</span>
+              <span class="status-text">Bad Request</span>
+              <span class="status-desc">Missing <code class="inline-code">query</code> or <code class="inline-code">visitorId</code>, or <code class="inline-code">maxSuggestions</code> is outside the range 1–20.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">401</span>
+              <span class="status-text">Unauthorized</span>
+              <span class="status-desc">The service's GCP credentials are missing or expired.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">403</span>
+              <span class="status-text">Forbidden</span>
+              <span class="status-desc">The service account does not have the required permissions on the Retail catalog.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s5">503</span>
+              <span class="status-text">Service Unavailable</span>
+              <span class="status-desc">Vertex AI Retail Completion service is unavailable or the gRPC call failed.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- DATA MODELS                                       -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="section" id="data-models">
+        <div class="section-rule"></div>
+
+        <h2 class="sec-title">Data Models</h2>
+        <div class="sec-desc">Full schema definitions for all request and response objects.</div>
+
+        <!-- ProductResult -->
+        <h3 class="sub-title">ProductResult</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:150px">Field</th><th style="width:90px">Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">id</span></td><td><span class="param-type">string</span></td><td class="param-desc">Unique product identifier from the Retail catalog.</td></tr>
+                <tr><td><span class="param-name">title</span></td><td><span class="param-type">string</span></td><td class="param-desc">Display name of the product.</td></tr>
+                <tr><td><span class="param-name">categories</span></td><td><span class="param-type">string[]</span></td><td class="param-desc">Hierarchical category path strings (e.g. <code class="inline-code">"Footwear &gt; Running"</code>).</td></tr>
+                <tr><td><span class="param-name">uri</span></td><td><span class="param-type">string</span></td><td class="param-desc">Canonical URL of the product page.</td></tr>
+                <tr><td><span class="param-name">attributes</span></td><td><span class="param-type">object</span></td><td class="param-desc">Key-value map of product attributes (e.g. color, brand, gender). Values are strings.</td></tr>
+                <tr><td><span class="param-name">variants</span></td><td><span class="param-type">VariantResult[]</span></td><td class="param-desc">List of product variants (size, colour combinations). Each variant has an <code class="inline-code">id</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- FacetResult -->
+        <h3 class="sub-title">FacetResult</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:150px">Field</th><th style="width:90px">Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">key</span></td><td><span class="param-type">string</span></td><td class="param-desc">The Vertex AI attribute key (e.g. <code class="inline-code">colorFamilies</code>, <code class="inline-code">brands</code>).</td></tr>
+                <tr><td><span class="param-name">values</span></td><td><span class="param-type">FacetValueResult[]</span></td><td class="param-desc">List of distinct values with their product counts, sorted by count descending.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SearchStats -->
+        <h3 class="sub-title">SearchStats</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:150px">Field</th><th style="width:90px">Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">returned</span></td><td><span class="param-type">integer</span></td><td class="param-desc">Number of products in the current page.</td></tr>
+                <tr><td><span class="param-name">totalResults</span></td><td><span class="param-type">integer</span></td><td class="param-desc">Total number of matching products across all pages.</td></tr>
+                <tr><td><span class="param-name">offset</span></td><td><span class="param-type">integer</span></td><td class="param-desc">Offset applied to this page of results.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- AutocompleteSuggestion -->
+        <h3 class="sub-title">AutocompleteSuggestion</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:150px">Field</th><th style="width:90px">Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">suggestion</span></td><td><span class="param-type">string</span></td><td class="param-desc">A single completed search phrase suggested by Vertex AI, lowercased.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Facet key alias table -->
+        <h3 class="sub-title">Facet Key Aliases</h3>
+        <p>The <code class="inline-code">facetKeys</code> request field accepts client-friendly aliases which are mapped to Vertex AI attribute names internally:</p>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th>Alias (request)</th><th>Vertex AI Attribute</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">color</span></td><td><code class="inline-code">colorFamilies</code></td></tr>
+                <tr><td><span class="param-name">size</span></td><td><code class="inline-code">sizes</code></td></tr>
+                <tr><td><span class="param-name">brand</span></td><td><code class="inline-code">brands</code></td></tr>
+                <tr><td><span class="param-name">category</span></td><td><code class="inline-code">categories</code></td></tr>
+                <tr><td><span class="param-name">price</span></td><td><code class="inline-code">price</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sort alias table -->
+        <h3 class="sub-title">Sort Aliases</h3>
+        <p>The <code class="inline-code">orderBy</code> request field accepts human-readable aliases mapped to Vertex AI sort expressions:</p>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th>Alias (request)</th><th>Vertex AI orderBy Expression</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">relevance</span></td><td><em>Default — AI-ranked relevance scoring</em></td></tr>
+                <tr><td><span class="param-name">price_low_to_high</span></td><td><code class="inline-code">price</code></td></tr>
+                <tr><td><span class="param-name">price_high_to_low</span></td><td><code class="inline-code">price desc</code></td></tr>
+                <tr><td><span class="param-name">newest</span></td><td><code class="inline-code">attributes.createTime desc</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- CONFIGURATION                                     -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="section" id="configuration">
+        <div class="section-rule"></div>
+
+        <h2 class="sec-title">Configuration</h2>
+        <div class="sec-desc">
+          The service is configured via <code class="inline-code">appsettings.json</code>. All values can be overridden at deployment time using environment variables with the double-underscore separator convention (e.g. <code class="inline-code">Gcp__ProjectId=my-project</code>).
+        </div>
+
+        <h3 class="sub-title">GCP Settings</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:210px">Key</th><th style="width:130px">Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">Gcp:ProjectId</span></td><td><span class="param-default">— (required)</span></td><td class="param-desc">Google Cloud project ID hosting the Retail catalog.</td></tr>
+                <tr><td><span class="param-name">Gcp:Retail:Location</span></td><td><span class="param-default">global</span></td><td class="param-desc">Vertex AI Retail region.</td></tr>
+                <tr><td><span class="param-name">Gcp:Retail:Catalogs</span></td><td><span class="param-default">default_catalog</span></td><td class="param-desc">Name of the product catalog.</td></tr>
+                <tr><td><span class="param-name">Gcp:Retail:Branch</span></td><td><span class="param-default">default_branch</span></td><td class="param-desc">Catalog branch (analogous to a version or environment).</td></tr>
+                <tr><td><span class="param-name">Gcp:Retail:Placement</span></td><td><span class="param-default">default_search</span></td><td class="param-desc">Serving configuration name for search.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h3 class="sub-title">Search Settings</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:210px">Key</th><th style="width:130px">Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">Search:DefaultPageSize</span></td><td><span class="param-default">20</span></td><td class="param-desc">Page size applied when the request omits <code class="inline-code">pageSize</code>.</td></tr>
+                <tr><td><span class="param-name">Search:MaxPageSize</span></td><td><span class="param-default">100</span></td><td class="param-desc">Maximum page size the API will accept. Requests above this are rejected with 400.</td></tr>
+                <tr><td><span class="param-name">Search:DefaultOffset</span></td><td><span class="param-default">0</span></td><td class="param-desc">Pagination offset applied when the request omits <code class="inline-code">offset</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h3 class="sub-title">Autocomplete Settings</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding:0">
+            <table class="param-table">
+              <thead><tr><th style="width:240px">Key</th><th style="width:130px">Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><span class="param-name">Autocomplete:DefaultMaxSuggestions</span></td><td><span class="param-default">10</span></td><td class="param-desc">Number of suggestions returned when the request omits <code class="inline-code">maxSuggestions</code>.</td></tr>
+                <tr><td><span class="param-name">Autocomplete:MaxAllowedSuggestions</span></td><td><span class="param-default">20</span></td><td class="param-desc">Ceiling enforced by validation. Requests above this are rejected with 400.</td></tr>
+                <tr><td><span class="param-name">Autocomplete:Dataset</span></td><td><span class="param-default">cloud-retail</span></td><td class="param-desc">Vertex AI Retail dataset queried for autocomplete suggestions.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- ERROR REFERENCE                                   -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div class="section" id="errors">
+        <div class="section-rule"></div>
+
+        <h2 class="sec-title">Error Reference</h2>
+        <div class="sec-desc">
+          All error responses share a consistent JSON structure. Client applications should handle errors by inspecting the HTTP status code, then reading the <code class="inline-code">error</code> field for a human-readable description.
+        </div>
+
+        <h3 class="sub-title">Error Response Format</h3>
+        <div class="schema-tabs">
+          <div class="schema-tab-header">
+            <div class="schema-tab active">Error Response</div>
+          </div>
+          <pre><code><span class="t-cm">// HTTP 400 Bad Request (example)</span>
+{
+  <span class="t-key">"error"</span>: <span class="t-str">"query is required"</span>
+}
+
+<span class="t-cm">// HTTP 503 Service Unavailable (example)</span>
+{
+  <span class="t-key">"error"</span>: <span class="t-str">"Failed to fetch autocomplete suggestions"</span>
+}</code></pre>
+        </div>
+
+        <h3 class="sub-title">Status Code Reference</h3>
+        <div class="panel">
+          <div class="panel-body" style="padding: 4px 22px">
+            <div class="status-row">
+              <span class="status-code s2">200</span>
+              <span class="status-text">OK</span>
+              <span class="status-desc">Request processed successfully.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">400</span>
+              <span class="status-text">Bad Request</span>
+              <span class="status-desc">Request validation failed. Check the <code class="inline-code">error</code> field for the specific field and constraint that failed.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">401</span>
+              <span class="status-text">Unauthorized</span>
+              <span class="status-desc">The service's Google Cloud credentials are absent or have expired. Contact the infrastructure team.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">403</span>
+              <span class="status-text">Forbidden</span>
+              <span class="status-desc">The service account lacks the required IAM role (<code class="inline-code">roles/retail.viewer</code>) on the GCP project.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">404</span>
+              <span class="status-text">Not Found</span>
+              <span class="status-desc">The GCP catalog, branch, or serving configuration referenced in <code class="inline-code">appsettings.json</code> does not exist.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s4">429</span>
+              <span class="status-text">Too Many Requests</span>
+              <span class="status-desc">The Vertex AI Retail API quota for this GCP project has been exceeded.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s5">500</span>
+              <span class="status-text">Internal Server Error</span>
+              <span class="status-desc">An unexpected error occurred within the service.</span>
+            </div>
+            <div class="status-row">
+              <span class="status-code s5">503</span>
+              <span class="status-text">Service Unavailable</span>
+              <span class="status-desc">Vertex AI Retail Search or Completion is temporarily unavailable. The gRPC call to Google Cloud failed.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout note">
+          <div class="callout-icon">⚑</div>
+          <div class="callout-body">
+            <b>4xx vs 5xx</b>
+            HTTP 4xx errors indicate a problem with the request or service configuration that requires action. HTTP 5xx errors indicate a transient downstream failure — these are safe to retry with exponential back-off.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div style="border-top: 1px solid var(--border); padding-top: 28px; margin-top: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap; gap: 12px;">
+        <div style="font-size: .8rem; color: var(--muted);">
+          Vertex AI Retail Search API · v1.0 · .NET 10 · Google.Cloud.Retail.V2 v2.16.0
+        </div>
+        <div style="font-size: .78rem; color: var(--muted);">
+          Woolworths · Retail Technology
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+</body>
+</html>

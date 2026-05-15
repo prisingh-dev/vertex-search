@@ -8,11 +8,12 @@
     <AssemblyName>VertexSearchApi</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <DefaultItemExcludes>$(DefaultItemExcludes);VertexSearchApi.Tests/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Google Cloud Vertex AI Retail Search client -->
-    <PackageReference Include="Google.Cloud.Retail.V2" Version="2.9.0" />
+    <PackageReference Include="Google.Cloud.Retail.V2" Version="2.16.0" />
     <!-- Swagger UI -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
