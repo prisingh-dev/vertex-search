@@ -1,3 +1,3 @@
 namespace VertexSearchApi.DTOs.Response;
 
-public record SearchStats(int Returned, int TotalResults, int Offset);
+public record SearchStats(int Returned, int TotalResults);

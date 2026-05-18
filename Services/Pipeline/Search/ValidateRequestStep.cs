@@ -32,9 +32,6 @@ public class ValidateRequestStep : Step<SearchContext>
                 throw new InvalidSearchRequestException($"pageSize must be <= {_opts.MaxPageSize}");
         }
 
-        if (req.Offset.HasValue && req.Offset < 0)
-            throw new InvalidSearchRequestException("offset must be >= 0");
-
         return Task.CompletedTask;
     }
 }

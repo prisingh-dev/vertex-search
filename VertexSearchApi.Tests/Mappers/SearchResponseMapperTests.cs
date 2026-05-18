@@ -8,9 +8,9 @@ public class SearchResponseMapperTests
 {
     private readonly SearchResponseMapper _mapper = new();
 
-    private static SearchContext BuildContext(SearchResponse response, int offset = 0) => new()
+    private static SearchContext BuildContext(SearchResponse response) => new()
     {
-        RetailSearchRequest  = new SearchRequest { PageSize = 20, Offset = offset },
+        RetailSearchRequest  = new SearchRequest { PageSize = 20 },
         RetailSearchResponse = response
     };
 
@@ -155,16 +155,15 @@ public class SearchResponseMapperTests
     }
 
     [Fact]
-    public void Maps_Stats_Returned_TotalResults_Offset()
+    public void Maps_Stats_Returned_And_TotalResults()
     {
         var response = SingleProductResponse();
         response.TotalSize = 42;
 
-        var result = _mapper.ToApiResponse(BuildContext(response, offset: 20));
+        var result = _mapper.ToApiResponse(BuildContext(response));
 
         Assert.Equal(1,  result.Stats!.Returned);
         Assert.Equal(42, result.Stats.TotalResults);
-        Assert.Equal(20, result.Stats.Offset);
     }
 
     [Fact]

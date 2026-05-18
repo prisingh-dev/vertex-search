@@ -9,13 +9,11 @@ public class SearchResponseMapper
 {
     public KeywordSearchResponse ToApiResponse(SearchContext context)
     {
-        var response       = context.RetailSearchResponse!;
-        int resolvedOffset = context.RetailSearchRequest?.Offset ?? 0;
-        string? storeId    = NullIfEmpty(context.ApiRequest?.StoreId);
+        var response = context.RetailSearchResponse!;
 
         var products = response.Results
             .Where(r => r is not null)
-            .Select(r => MapProduct(r, storeId))
+            .Select(MapProduct)
             .Where(p => !string.IsNullOrWhiteSpace(p.Id))
             .ToList();
 
@@ -29,7 +27,7 @@ public class SearchResponseMapper
         {
             Products         = products.Count > 0 ? products : null,
             Facets           = facets.Count > 0 ? facets : null,
-            Stats            = new SearchStats(products.Count, response.TotalSize, resolvedOffset),
+            Stats            = new SearchStats(products.Count, response.TotalSize),
             NextPageToken    = NullIfEmpty(response.NextPageToken),
             CorrectedQuery   = NullIfEmpty(response.CorrectedQuery),
             AttributionToken = NullIfEmpty(response.AttributionToken),
@@ -39,7 +37,7 @@ public class SearchResponseMapper
         };
     }
 
-    private static ProductResult MapProduct(SearchResponse.Types.SearchResult result, string? storeId)
+    private static ProductResult MapProduct(SearchResponse.Types.SearchResult result)
     {
         var product = result.Product;
 
@@ -65,72 +63,53 @@ public class SearchResponseMapper
             .Select(vid => new VariantResult(vid))
             .ToList();
 
-        var catalogPrice = MapCatalogPrice(product.PriceInfo);
-        ProductPrice? price = OverlayLocalInventoryPrice(result, storeId) ?? catalogPrice;
+        var price = MapCatalogPrice(product.PriceInfo);
+        var rollupValues = MapVariantRollupValues(result);
 
         return new ProductResult
         {
-            Id         = id,
-            Title      = NullIfEmpty(product.Title),
-            Categories = product.Categories.Count > 0 ? [.. product.Categories] : null,
-            Uri        = NullIfEmpty(product.Uri),
-            Attributes = attributes.Count > 0 ? attributes : null,
-            Variants   = variants.Count > 0 ? variants : null,
-            Price      = price
+            Id                 = id,
+            Title              = NullIfEmpty(product.Title),
+            Categories         = product.Categories.Count > 0 ? [.. product.Categories] : null,
+            Uri                = NullIfEmpty(product.Uri),
+            Attributes         = attributes.Count > 0 ? attributes : null,
+            Variants           = variants.Count > 0 ? variants : null,
+            Price              = price,
+            VariantRollupValues = rollupValues.Count > 0 ? rollupValues : null
         };
     }
 
- 
-    private static ProductPrice? OverlayLocalInventoryPrice(
-        SearchResponse.Types.SearchResult result,
-        string? storeId)
+
+    private static Dictionary<string, object?> MapVariantRollupValues(
+        SearchResponse.Types.SearchResult result)
     {
-        if (storeId is null) return null;
+        var rollupValues = new Dictionary<string, object?>();
 
-        var localInventory = result.Product.LocalInventories
-            .FirstOrDefault(li => li.PlaceId == storeId);
+        foreach (var (key, value) in result.VariantRollupValues)
+        {
+            rollupValues[key] = value.KindCase switch
+            {
+                Value.KindOneofCase.NumberValue => value.NumberValue,
+                Value.KindOneofCase.StringValue => value.StringValue,
+                Value.KindOneofCase.BoolValue   => value.BoolValue,
+                Value.KindOneofCase.ListValue   => value.ListValue.Values
+                    .Select(ExtractPrimitiveValue).ToList(),
+                _                               => null
+            };
+        }
 
-        if (localInventory?.PriceInfo is { Price: > 0 } localPi)
-            return MapCatalogPrice(localPi);
-
-        return TryExtractLocalInventoryPrice(result, storeId);
+        return rollupValues;
     }
 
-    private static ProductPrice? TryExtractLocalInventoryPrice(
-        SearchResponse.Types.SearchResult result, string? storeId)
+    private static object? ExtractPrimitiveValue(Value v)
     {
-        if (storeId is null || result.VariantRollupValues.Count == 0)
-            return null;
-
-        var rollupKey = $"inventory({storeId}, price)";
-        if (!result.VariantRollupValues.TryGetValue(rollupKey, out var rollupValue))
-            return null;
-
-        float? localPrice = rollupValue.KindCase switch
+        return v.KindCase switch
         {
-            Value.KindOneofCase.NumberValue => (float)rollupValue.NumberValue,
-            Value.KindOneofCase.ListValue   => ExtractFirstNumber(rollupValue.ListValue),
+            Value.KindOneofCase.NumberValue => v.NumberValue,
+            Value.KindOneofCase.StringValue => v.StringValue,
+            Value.KindOneofCase.BoolValue   => v.BoolValue,
             _                               => null
         };
-
-        if (localPrice is null or <= 0)
-            return null;
-
-        return new ProductPrice
-        {
-            Price = localPrice.Value
-        };
-    }
-
-    private static float? ExtractFirstNumber(ListValue? list)
-    {
-        if (list is null) return null;
-        foreach (var v in list.Values)
-        {
-            if (v.KindCase == Value.KindOneofCase.NumberValue && v.NumberValue > 0)
-                return (float)v.NumberValue;
-        }
-        return null;
     }
 
     private static ProductPrice? MapCatalogPrice(PriceInfo? pi)

@@ -19,7 +19,6 @@ public class SearchRequestMapper
     public SearchRequest ToRetailSearchRequest(KeywordSearchRequest api)
     {
         int pageSize = api.PageSize ?? _search.DefaultPageSize;
-        int offset   = api.Offset   ?? _search.DefaultOffset;
 
         var request = new SearchRequest
         {
@@ -33,8 +32,6 @@ public class SearchRequestMapper
 
         if (!string.IsNullOrWhiteSpace(api.PageToken))
             request.PageToken = api.PageToken;
-        else
-            request.Offset = offset;
 
         if (!string.IsNullOrWhiteSpace(api.Filter))
             request.Filter = api.Filter;
@@ -42,10 +39,10 @@ public class SearchRequestMapper
         if (!string.IsNullOrWhiteSpace(api.StoreId))
             request.PlaceId = api.StoreId;
 
-        if (!string.IsNullOrWhiteSpace(api.StoreId))
+        foreach (var rollupKey in api.VariantRollupKeys ?? [])
         {
-            request.PlaceId = api.StoreId;
-            request.VariantRollupKeys.Add($"inventory({api.StoreId}, price)");
+            if (!string.IsNullOrWhiteSpace(rollupKey))
+                request.VariantRollupKeys.Add(rollupKey);
         }
         var sort = ResolveSort(api.OrderBy);
         if (!string.IsNullOrWhiteSpace(sort))

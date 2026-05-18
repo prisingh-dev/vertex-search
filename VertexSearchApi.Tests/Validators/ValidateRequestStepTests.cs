@@ -32,7 +32,6 @@ public class ValidateRequestStepTests
             Query    = "shoes",
             VisitorId = "u1",
             PageSize  = null,
-            Offset    = null,
             OrderBy   = null,
             Filter    = null,
             FacetKeys = null
@@ -47,10 +46,10 @@ public class ValidateRequestStepTests
     }
 
     [Fact]
-    public async Task Zero_Offset_Does_Not_Throw()
+    public async Task PageToken_Does_Not_Throw()
     {
         await CreateStep().HandleAsync(ContextWith(
-            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", Offset = 0 }));
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", PageToken = "abc" }));
     }
 
     [Fact]
@@ -126,11 +125,4 @@ public class ValidateRequestStepTests
                 new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", PageSize = 51 })));
     }
 
-    [Fact]
-    public async Task Negative_Offset_Throws()
-    {
-        await Assert.ThrowsAsync<InvalidSearchRequestException>(
-            () => CreateStep().HandleAsync(ContextWith(
-                new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", Offset = -1 })));
-    }
 }
