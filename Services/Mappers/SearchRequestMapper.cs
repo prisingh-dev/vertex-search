@@ -31,10 +31,6 @@ public class SearchRequestMapper
             QueryExpansionSpec = BuildQueryExpansionSpec(api.QueryExpansionCondition)
         };
 
-        // page_token and offset are mutually exclusive per the Retail API spec:
-        // "offset is only considered if pageToken is unset."
-        // When a token is supplied it encodes the position and experiment context —
-        // sending offset alongside would be silently ignored by GCP anyway.
         if (!string.IsNullOrWhiteSpace(api.PageToken))
             request.PageToken = api.PageToken;
         else
@@ -46,6 +42,11 @@ public class SearchRequestMapper
         if (!string.IsNullOrWhiteSpace(api.StoreId))
             request.PlaceId = api.StoreId;
 
+        if (!string.IsNullOrWhiteSpace(api.StoreId))
+        {
+            request.PlaceId = api.StoreId;
+            request.VariantRollupKeys.Add($"inventory({api.StoreId}, price)");
+        }
         var sort = ResolveSort(api.OrderBy);
         if (!string.IsNullOrWhiteSpace(sort))
             request.OrderBy = sort;
@@ -70,7 +71,6 @@ public class SearchRequestMapper
 
     private static SearchRequest.Types.QueryExpansionSpec BuildQueryExpansionSpec(string? condition)
     {
-        // Mirror Java: parse the enum by name; fall back to AUTO on any failure
         var parsed = Enum.TryParse<SearchRequest.Types.QueryExpansionSpec.Types.Condition>(
             condition, ignoreCase: true, out var result)
             ? result

@@ -1,0 +1,368 @@
+Product Search API — 
+
+What It Is
+A single REST endpoint that sits between your frontend and Google Vertex AI Retail Search — one of Google's most advanced product discovery engines used by large-scale e-commerce platforms globally.
+
+POST /api/v1/search
+Content-Type: application/json
+Your frontend sends a simple JSON body. The API handles all the complexity of authenticating, translating, and calling Google Cloud — and returns a clean, structured response.
+
+Feature 1 — Keyword Search with AI Ranking
+The core capability. You send a search term and get back products ranked by Google's AI relevance model.
+
+{
+  "query": "red running shoes",
+  "visitorId": "user-session-abc123"
+}
+* query — what the user typed
+* visitorId — a session or cookie ID; Google uses this to personalise results over time. The more searches a visitor makes, the better their results get.
+
+Feature 2 — Sorting
+Control how results are ordered. The API accepts human-friendly aliases — no need to know Vertex AI's internal expression syntax.
+
+{ "orderBy": "price_low_to_high" }
+Alias you send	What it does
+relevance	Google AI default — best match first
+price_low_to_high	Cheapest first
+price_high_to_low	Most expensive first
+newest	Recently added first
+Any unknown alias passes straight through as a raw Vertex AI orderBy expression, so you're not locked to these four.
+
+Feature 3 — Faceted Navigation (Filters for the Filter Panel)
+Ask the API to return counts per attribute alongside results — this is what powers your filter sidebar.
+
+{ "facetKeys": ["color", "brand", "size", "category", "price"] }
+Response:
+
+"facets": [
+  { "key": "colorFamilies", "values": [{"value":"Red","count":42}, {"value":"Blue","count":35}] },
+  { "key": "brands",        "values": [{"value":"Nike","count":58}, {"value":"Adidas","count":47}] }
+]
+Again, client-friendly aliases — color → colorFamilies, brand → brands etc. All mappings are configurable in appsettings.json without a code change.
+
+Feature 4 — Filtering
+Narrow results using Vertex AI's filter expression language. This is what gets applied when a user clicks a facet value.
+
+{ "filter": "availability: IN_STOCK" }
+More complex filters are fully supported:
+
+{ "filter": "colorFamilies: ANY(\"Red\", \"Blue\") AND price: IN(50, 150)" }
+
+Feature 5 — Pagination
+Two modes — use whichever fits your frontend:
+Offset-based (classic page numbers):
+
+{ "pageSize": 20, "offset": 40 }
+→ Page 3 of 20 results per page.
+Cursor-based (infinite scroll / "load more"):
+
+{ "pageToken": "eyJwYWdlIjogMn0..." }
+→ Take the nextPageToken from the previous response and pass it back. More reliable for deep pagination — the cursor encodes exact position and experiment context.
+Default page size is 20, maximum is 100 — both configurable.
+
+Feature 6 — Store-Scoped Search
+A key feature for Woolworths specifically. Add a storeId and results are scoped to what's available at that physical store, with local pricing applied.
+
+{ "query": "milk", "visitorId": "u1", "storeId": "store-042" }
+Without storeId → results from the entire national catalog.
+With storeId → only products with local inventory at that store, with that store's price.
+Under the hood this maps to Vertex AI's PlaceId field, which uses LocalInventory.place_id for matching.
+
+Feature 7 — Query Expansion
+Controls what happens when a search returns very few results.
+
+{ "queryExpansionCondition": "AUTO" }
+Value	Behaviour
+AUTO (default)	Google AI automatically widens the query when results are sparse
+DISABLED	Strict matching only — returns fewer but exact results
+Feature 8 — Spell Correction
+Fully automatic — no configuration required. If a user types runnnig shoez, Vertex AI corrects it and the response tells you what was used:
+
+{
+  "correctedQuery": "running shoes",
+  "products": [ ... ]
+}
+Your frontend can display "Showing results for: running shoes" using this field.
+
+Feature 9 — Full Pricing Information
+Every product in the response carries a complete price object:
+
+"price": {
+  "currencyCode": "AUD",
+  "price": 149.99,
+  "originalPrice": 199.99,
+  "cost": 89.50,
+  "priceEffectiveTime": "2025-01-01T00:00:00Z",
+  "priceExpireTime":    "2025-12-31T23:59:59Z",
+  "priceRange": {
+    "priceMin": 139.99,      "priceMax": 169.99,
+    "originalPriceMin": 179.99, "originalPriceMax": 219.99
+  }
+}
+* originalPrice — only present when there's a genuine discount (differs from price)
+* priceRange — min/max spread across all variants of that product (sizes, colours)
+* priceEffectiveTime / priceExpireTime — lets the frontend drive time-limited promotions without any extra logic
+* cost — available for margin calculations on internal dashboards
+Fields are omitted entirely when not set — no nulls cluttering the response.
+
+Feature 10 — Search Controls & Redirects
+When Vertex AI serving controls are active (boost rules, bury rules, redirect rules configured in the GCP console), the response tells you exactly what was applied:
+
+"appliedControls": ["boost-new-arrivals", "pin-sale-items"],
+"redirectUri": "https://example.com/sale"
+* appliedControls — useful for debugging why a product ranked higher than expected
+* redirectUri — if a search rule triggers a full redirect (e.g. "woolworths" → homepage), your frontend reads this and navigates
+
+Feature 11 — Attribution Token
+Every response carries an attributionToken:
+
+"attributionToken": "AHRlcnJpZmljLXRva2Vu..."
+Pass this back to Google with any click, add-to-cart, or purchase event. It closes the feedback loop — Google learns which results led to conversions and improves future rankings automatically.
+
+Error Handling — Always Consistent
+Every error, regardless of source, returns the same shape:
+
+{ "error": "query is required" }
+HTTP Status	Cause
+400	Missing query or visitorId, invalid pageSize/offset, bad JSON
+401	GCP credentials missing or expired
+403	Service account missing IAM role
+404	Catalog or branch not configured correctly in GCP
+429	Rate limit hit (60 requests/60s per IP) or GCP quota exceeded
+503	Vertex AI temporarily unavailable
+Rate Limiting
+60 requests per 60 seconds per client IP, enforced at the API layer before any GCP call is made. Exceeding it returns:
+
+HTTP 429
+Retry-After: 45
+{ "error": "Too many requests. Please slow down." }
+
+What Goes In / What Comes Out — Full Picture
+Request (all fields):
+
+{
+  "query":                  "red running shoes",   ← required
+  "visitorId":              "session-abc123",       ← required
+  "pageSize":               20,
+  "offset":                 0,
+  "pageToken":              "eyJ...",              ← alternative to offset
+  "orderBy":                "price_low_to_high",
+  "filter":                 "availability: IN_STOCK",
+  "facetKeys":              ["color", "brand", "size"],
+  "queryExpansionCondition":"AUTO",
+  "storeId":                "store-042"
+}
+Response:
+
+{
+  "products":        [ { "id", "title", "categories", "uri", "attributes", "variants", "price" } ],
+  "facets":          [ { "key", "values": [{ "value", "count" }] } ],
+  "stats":           { "returned": 20, "totalResults": 157, "offset": 0 },
+  "nextPageToken":   "eyJ...",
+  "correctedQuery":  "running shoes",
+  "attributionToken":"AHRl...",
+  "redirectUri":     null,
+  "appliedControls": ["boost-new-arrivals"]
+}
+
+
+
+
+Search API — Data Flow Across Files
+
+HTTP POST /api/v1/search
+         │
+         ▼
+┌─────────────────────┐
+│  SearchController   │  Creates SearchContext, fires StepService
+└────────┬────────────┘
+         │  StepService.ExecuteAsync(context)
+         ▼
+┌─────────────────────┐
+│    StepService      │  Calls firstStep.HandleAsync(context)
+└────────┬────────────┘
+         │  Step 1
+         ▼
+┌─────────────────────┐
+│ ValidateRequestStep │  Reads context.ApiRequest, throws on bad input
+└────────┬────────────┘
+         │  Step 2
+         ▼
+┌──────────────────────┐
+│  ConvertRequestStep  │  Reads ApiRequest → writes RetailSearchRequest
+└────────┬─────────────┘
+         │  Step 3
+         ▼
+┌─────────────────────┐
+│     SearchStep      │  Reads RetailSearchRequest → calls GCP → writes RetailSearchResponse
+└────────┬────────────┘
+         │  Step 4
+         ▼
+┌──────────────────────┐
+│ ConvertResponseStep  │  Reads RetailSearchResponse → writes ApiResponse
+└────────┬─────────────┘
+         │
+         ▼
+  Returns context.ApiResponse  →  HTTP 200 JSON
+
+
+
+  Step 0 — Entry Point
+File: Controllers/SearchController.cs
+
+
+HTTP JSON body  →  KeywordSearchRequest (deserialized by ASP.NET Core)
+
+var context = new SearchContext { ApiRequest = request };
+return (await _stepService.ExecuteAsync(context)).ApiResponse!;
+Creates a fresh SearchContext with only ApiRequest populated. Hands it to StepService. The SearchContext is the single shared object that all four steps read from and write to.
+
+Context state after this step:
+
+
+ApiRequest          ✅  KeywordSearchRequest { query, visitorId, pageSize, ... }
+RetailSearchRequest ❌  null
+RetailSearchResponse❌  null
+ApiResponse         ❌  null
+Step 0.5 — Pipeline Executor
+File: Services/Pipeline/StepService.cs
+
+
+await _firstStep.HandleAsync(context);
+return context;
+Knows only the first step of the chain. Calls HandleAsync on it — the chain runs itself after that. Returns the mutated context when all steps are done.
+
+Step 0.6 — Base Step Mechanics
+File: Services/Pipeline/Step.cs
+
+Every step inherits from Step<T>. On each call to HandleAsync:
+
+Starts a Stopwatch
+Calls InnerHandleAsync(context) — the subclass logic
+Logs elapsed time; logs WARNING if > 500ms
+Calls _nextStep.HandleAsync(context) — hands off to the next step
+This is what makes the chain self-executing — no step knows about the one after, they just call _nextStep.
+
+Step 1 — Validation
+File: Services/Pipeline/Search/ValidateRequestStep.cs
+
+Reads: context.ApiRequest
+
+Writes: nothing
+
+Throws: InvalidSearchRequestException → HTTP 400
+
+
+Checks performed:
+  query       → non-blank, required
+  visitorId   → non-blank, required
+  pageSize    → 1 to MaxPageSize (100) if provided
+  offset      → >= 0 if provided
+If any check fails the exception bubbles up through GlobalExceptionHandler and the pipeline stops. Nothing reaches GCP.
+
+Context state after this step: unchanged — still only ApiRequest.
+
+Step 2 — Request Translation
+Files:
+
+Services/Pipeline/Search/ConvertRequestStep.cs — orchestrates
+Services/Mappers/SearchRequestMapper.cs — does the work
+Reads: context.ApiRequest
+
+Writes: context.RetailSearchRequest
+
+ConvertRequestStep calls:
+
+
+context.RetailSearchRequest = _mapper.ToRetailSearchRequest(context.ApiRequest!);
+SearchRequestMapper translates field by field:
+
+
+KeywordSearchRequest          →    Google SearchRequest (protobuf)
+─────────────────────────────────────────────────────────────────
+query                         →    Query
+visitorId                     →    VisitorId
+pageSize ?? 20                →    PageSize
+pageToken (if set)            →    PageToken   (offset ignored)
+offset    (if no token)       →    Offset
+filter                        →    Filter
+storeId                       →    PlaceId
+orderBy   "price_low_to_high" →    OrderBy "price"        (SortMap alias)
+facetKeys ["color","brand"]   →    FacetSpecs [colorFamilies, brands]  (FacetKeys alias)
+queryExpansionCondition       →    QueryExpansionSpec.Condition (enum parse, fallback AUTO)
+(from config)                 →    Branch    "projects/.../branches/default_branch"
+(from config)                 →    Placement "projects/.../servingConfigs/default_search"
+Context state after this step:
+
+
+ApiRequest           ✅  KeywordSearchRequest
+RetailSearchRequest  ✅  Google.Cloud.Retail.V2.SearchRequest (protobuf)
+RetailSearchResponse ❌  null
+ApiResponse          ❌  null
+Step 3 — GCP Call
+File: Services/Pipeline/Search/SearchStep.cs
+
+Reads: context.RetailSearchRequest
+
+Writes: context.RetailSearchResponse
+
+
+context.RetailSearchResponse = await _client
+    .SearchAsync(context.RetailSearchRequest!)
+    .AsRawResponses()
+    .FirstAsync();
+SearchServiceClient is a singleton — gRPC connection was warm-started at application startup
+.AsRawResponses().FirstAsync() — gets the first page of the paginated gRPC stream as a single SearchResponse
+Any exception is caught, logged, and re-thrown as SearchServiceException → HTTP 503
+Context state after this step:
+
+
+ApiRequest           ✅  KeywordSearchRequest
+RetailSearchRequest  ✅  Google SearchRequest (protobuf)
+RetailSearchResponse ✅  Google SearchResponse (protobuf) — raw from GCP
+ApiResponse          ❌  null
+Step 4 — Response Translation
+Files:
+
+Services/Pipeline/Search/ConvertResponseStep.cs — orchestrates
+Services/Mappers/SearchResponseMapper.cs — does the work
+Reads: context.RetailSearchResponse + context.RetailSearchRequest (for resolved offset)
+
+Writes: context.ApiResponse
+
+SearchResponseMapper.ToApiResponse maps:
+
+
+Google SearchResponse (protobuf)       →    KeywordSearchResponse
+───────────────────────────────────────────────────────────────────────
+response.Results[]                     →    Products[]
+  result.Product.PrimaryProductId      →      id  (fallback: Product.Id → result.Id)
+  product.Title                        →      title
+  product.Categories                   →      categories[]
+  product.Uri                          →      uri
+  product.Attributes (CustomAttribute) →      attributes { key: "text1, text2" }
+  product.Variants[].Id                →      variants[{ id }]
+  product.PriceInfo                    →      price { currencyCode, price, originalPrice,
+                                                       cost, priceEffectiveTime,
+                                                       priceExpireTime, priceRange }
+response.Facets[]                      →    Facets[]
+  facet.Key                            →      key
+  facet.Values[].Value + .Count        →      values[{ value, count }]
+response.TotalSize + products.Count    →    Stats { returned, totalResults, offset }
+response.NextPageToken                 →    NextPageToken
+response.CorrectedQuery                →    CorrectedQuery
+response.AttributionToken              →    AttributionToken
+response.RedirectUri                   →    RedirectUri
+response.AppliedControls[]             →    AppliedControls[]
+Context state after this step (final):
+
+
+ApiRequest           ✅  KeywordSearchRequest
+RetailSearchRequest  ✅  Google SearchRequest (protobuf)
+RetailSearchResponse ✅  Google SearchResponse (protobuf)
+ApiResponse          ✅  KeywordSearchResponse  ← this is returned to the caller
+Return Path
+Back in SearchController:
+
+
+return (await _stepService.ExecuteAsync(context)).ApiResponse!;

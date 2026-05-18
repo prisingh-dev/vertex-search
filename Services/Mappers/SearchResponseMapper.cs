@@ -1,4 +1,5 @@
 using Google.Cloud.Retail.V2;
+using Google.Protobuf.WellKnownTypes;
 using VertexSearchApi.DTOs.Response;
 using VertexSearchApi.Services.Context;
 
@@ -10,10 +11,11 @@ public class SearchResponseMapper
     {
         var response       = context.RetailSearchResponse!;
         int resolvedOffset = context.RetailSearchRequest?.Offset ?? 0;
+        string? storeId    = NullIfEmpty(context.ApiRequest?.StoreId);
 
         var products = response.Results
             .Where(r => r is not null)
-            .Select(MapProduct)
+            .Select(r => MapProduct(r, storeId))
             .Where(p => !string.IsNullOrWhiteSpace(p.Id))
             .ToList();
 
@@ -37,11 +39,10 @@ public class SearchResponseMapper
         };
     }
 
-    private static ProductResult MapProduct(SearchResponse.Types.SearchResult result)
+    private static ProductResult MapProduct(SearchResponse.Types.SearchResult result, string? storeId)
     {
         var product = result.Product;
 
-        // Resolve the best available product ID (mirrors Java logic)
         string id = !string.IsNullOrWhiteSpace(product.PrimaryProductId)
             ? product.PrimaryProductId
             : !string.IsNullOrWhiteSpace(product.Id)
@@ -64,22 +65,9 @@ public class SearchResponseMapper
             .Select(vid => new VariantResult(vid))
             .ToList();
 
-        var pi = product.PriceInfo;
-        ProductPrice? price = pi is { Price: > 0 }
-            ? new ProductPrice
-            {
-                CurrencyCode       = NullIfEmpty(pi.CurrencyCode),
-                Price              = pi.Price,
-                OriginalPrice      = pi.OriginalPrice > 0 && pi.OriginalPrice != pi.Price
-                                         ? pi.OriginalPrice : null,
-                Cost               = pi.Cost > 0 ? pi.Cost : null,
-                PriceEffectiveTime = pi.PriceEffectiveTime is { Seconds: > 0 } pet
-                                         ? new DateTimeOffset(pet.ToDateTime()) : null,
-                PriceExpireTime    = pi.PriceExpireTime is { Seconds: > 0 } pxt
-                                         ? new DateTimeOffset(pxt.ToDateTime()) : null,
-                PriceRange         = MapPriceRange(pi.PriceRange)
-            }
-            : null;
+        var catalogPrice = MapCatalogPrice(product.PriceInfo);
+        ProductPrice? price = OverlayLocalInventoryPrice(catalogPrice, result, storeId)
+                              ?? catalogPrice;
 
         return new ProductResult
         {
@@ -90,6 +78,62 @@ public class SearchResponseMapper
             Attributes = attributes.Count > 0 ? attributes : null,
             Variants   = variants.Count > 0 ? variants : null,
             Price      = price
+        };
+    }
+
+ 
+    private static ProductPrice? TryExtractLocalInventoryPrice(
+        SearchResponse.Types.SearchResult result, string? storeId)
+    {
+        if (storeId is null || result.VariantRollupValues.Count == 0)
+            return null;
+
+        var rollupKey = $"inventory({storeId}, price)";
+        if (!result.VariantRollupValues.TryGetValue(rollupKey, out var rollupValue))
+            return null;
+
+        float? localPrice = rollupValue.KindCase switch
+        {
+            Value.KindOneofCase.NumberValue => (float)rollupValue.NumberValue,
+            Value.KindOneofCase.ListValue   => ExtractFirstNumber(rollupValue.ListValue),
+            _                               => null
+        };
+
+        if (localPrice is null or <= 0)
+            return null;
+
+        return new ProductPrice
+        {
+            Price = localPrice.Value
+        };
+    }
+
+    private static float? ExtractFirstNumber(ListValue? list)
+    {
+        if (list is null) return null;
+        foreach (var v in list.Values)
+        {
+            if (v.KindCase == Value.KindOneofCase.NumberValue && v.NumberValue > 0)
+                return (float)v.NumberValue;
+        }
+        return null;
+    }
+
+    private static ProductPrice? MapCatalogPrice(PriceInfo? pi)
+    {
+        if (pi is not { Price: > 0 }) return null;
+        return new ProductPrice
+        {
+            CurrencyCode       = NullIfEmpty(pi.CurrencyCode),
+            Price              = pi.Price,
+            OriginalPrice      = pi.OriginalPrice > 0 && pi.OriginalPrice != pi.Price
+                                     ? pi.OriginalPrice : null,
+            Cost               = pi.Cost > 0 ? pi.Cost : null,
+            PriceEffectiveTime = pi.PriceEffectiveTime is { Seconds: > 0 } pet
+                                     ? new DateTimeOffset(pet.ToDateTime()) : null,
+            PriceExpireTime    = pi.PriceExpireTime is { Seconds: > 0 } pxt
+                                     ? new DateTimeOffset(pxt.ToDateTime()) : null,
+            PriceRange         = MapPriceRange(pi.PriceRange)
         };
     }
 

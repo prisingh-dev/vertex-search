@@ -6,14 +6,12 @@ public class RateLimitOptions
 
     public static class Policies
     {
-        public const string Search      = "search";
+        public const string Search       = "search";
         public const string Autocomplete = "autocomplete";
-        public const string Mock        = "mock";
     }
 
-    public PolicyOptions Search      { get; set; } = new();
+    public PolicyOptions Search       { get; set; } = new();
     public PolicyOptions Autocomplete { get; set; } = new();
-    public PolicyOptions Mock        { get; set; } = new();
 
     public class PolicyOptions
     {

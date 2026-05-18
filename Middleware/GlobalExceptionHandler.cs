@@ -4,9 +4,6 @@ using VertexSearchApi.Exceptions;
 
 namespace VertexSearchApi.Middleware;
 
-/// <summary>
-/// Translates exceptions to JSON error responses, mirroring the Java ControllerAdvisor.
-/// </summary>
 public class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;

@@ -17,8 +17,6 @@ public class ValidateAutocompleteRequestStepTests
     private static AutocompleteContext ContextWith(AutocompleteRequest request) =>
         new() { ApiRequest = request };
 
-    // ── Happy path ────────────────────────────────────────────────────────────
-
     [Fact]
     public async Task Valid_Request_Does_Not_Throw()
     {
@@ -39,8 +37,6 @@ public class ValidateAutocompleteRequestStepTests
         await CreateStep(maxSuggestions: 10).HandleAsync(ContextWith(
             new AutocompleteRequest { Query = "sho", VisitorId = "u1", MaxSuggestions = 10 }));
     }
-
-    // ── Null / missing fields ─────────────────────────────────────────────────
 
     [Fact]
     public async Task Null_ApiRequest_Throws()
@@ -88,8 +84,6 @@ public class ValidateAutocompleteRequestStepTests
             () => CreateStep().HandleAsync(ContextWith(
                 new AutocompleteRequest { Query = "sho", VisitorId = null })));
     }
-
-    // ── MaxSuggestions bounds ─────────────────────────────────────────────────
 
     [Fact]
     public async Task MaxSuggestions_Zero_Throws()

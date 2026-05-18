@@ -4,7 +4,6 @@ using VertexSearchApi.DTOs.Response;
 
 namespace VertexSearchApi.Services.Context;
 
-/// <summary>Mutable context object passed through the search pipeline steps.</summary>
 public class SearchContext
 {
     public KeywordSearchRequest? ApiRequest { get; set; }
