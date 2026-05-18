@@ -17,8 +17,6 @@ public class ValidateRequestStepTests
     private static SearchContext ContextWith(KeywordSearchRequest request) =>
         new() { ApiRequest = request };
 
-    // ── Happy path ────────────────────────────────────────────────────────────
-
     [Fact]
     public async Task Valid_Request_Does_Not_Throw()
     {
@@ -54,8 +52,6 @@ public class ValidateRequestStepTests
         await CreateStep().HandleAsync(ContextWith(
             new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", Offset = 0 }));
     }
-
-    // ── Null / missing fields ─────────────────────────────────────────────────
 
     [Fact]
     public async Task Null_ApiRequest_Throws()
@@ -106,8 +102,6 @@ public class ValidateRequestStepTests
                 new KeywordSearchRequest { Query = "shoes", VisitorId = null })));
     }
 
-    // ── PageSize bounds ───────────────────────────────────────────────────────
-
     [Fact]
     public async Task PageSize_Zero_Throws()
     {
@@ -131,8 +125,6 @@ public class ValidateRequestStepTests
             () => CreateStep(maxPageSize: 50).HandleAsync(ContextWith(
                 new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", PageSize = 51 })));
     }
-
-    // ── Offset bounds ─────────────────────────────────────────────────────────
 
     [Fact]
     public async Task Negative_Offset_Throws()

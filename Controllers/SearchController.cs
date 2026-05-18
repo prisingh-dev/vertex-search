@@ -8,7 +8,6 @@ using VertexSearchApi.Services.Pipeline;
 
 namespace VertexSearchApi.Controllers;
 
-/// <summary>Exposes the Vertex AI Retail Search endpoint.</summary>
 [ApiController]
 [Route("api/v1")]
 [Produces("application/json")]
@@ -26,11 +25,6 @@ public class SearchController : ControllerBase
         _logger      = logger;
     }
 
-    /// <summary>
-    /// Executes a keyword search against the Vertex AI Retail catalog.
-    /// </summary>
-    /// <param name="request">Search parameters.</param>
-    /// <returns>Products, facets, stats, and metadata.</returns>
     [HttpPost("search")]
     [Consumes("application/json")]
     [ProducesResponseType(typeof(KeywordSearchResponse), StatusCodes.Status200OK)]

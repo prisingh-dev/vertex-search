@@ -12,9 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Google Cloud Vertex AI Retail Search client -->
     <PackageReference Include="Google.Cloud.Retail.V2" Version="2.16.0" />
-    <!-- Swagger UI -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 

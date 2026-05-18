@@ -8,7 +8,6 @@ using VertexSearchApi.Services.Pipeline;
 
 namespace VertexSearchApi.Controllers;
 
-/// <summary>Exposes the Vertex AI Retail autocomplete (typeahead) endpoint.</summary>
 [ApiController]
 [Route("api/v1")]
 [Produces("application/json")]
@@ -26,12 +25,6 @@ public class AutocompleteController : ControllerBase
         _logger      = logger;
     }
 
-    /// <summary>
-    /// Returns typeahead suggestions from the Vertex AI Retail completion service.
-    /// </summary>
-    /// <param name="query">Partial search term (lowercased before sending to GCP).</param>
-    /// <param name="visitorId">Session or user identifier.</param>
-    /// <param name="maxSuggestions">Optional cap on suggestions (default 10, max 20).</param>
     [HttpGet("autocomplete")]
     [ProducesResponseType(typeof(AutocompleteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]

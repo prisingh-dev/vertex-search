@@ -23,8 +23,6 @@ public class SearchResponseMapperTests
         return response;
     }
 
-    // ── Product mapping ───────────────────────────────────────────────────────
-
     [Fact]
     public void Maps_Product_Id_Title_Uri()
     {
@@ -128,8 +126,6 @@ public class SearchResponseMapperTests
         Assert.Null(result.Products);
     }
 
-    // ── Facet mapping ─────────────────────────────────────────────────────────
-
     [Fact]
     public void Maps_Facets_With_Values()
     {
@@ -158,8 +154,6 @@ public class SearchResponseMapperTests
         Assert.Null(result.Facets);
     }
 
-    // ── Stats mapping ─────────────────────────────────────────────────────────
-
     [Fact]
     public void Maps_Stats_Returned_TotalResults_Offset()
     {
@@ -172,8 +166,6 @@ public class SearchResponseMapperTests
         Assert.Equal(42, result.Stats.TotalResults);
         Assert.Equal(20, result.Stats.Offset);
     }
-
-    // ── Metadata mapping ──────────────────────────────────────────────────────
 
     [Fact]
     public void Sets_CorrectedQuery_When_Present()

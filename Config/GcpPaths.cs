@@ -1,6 +1,5 @@
 namespace VertexSearchApi.Config;
 
-/// <summary>Builds Google Cloud Retail resource path strings.</summary>
 public static class GcpPaths
 {
     public static string Branch(GcpOptions opts) =>
