@@ -82,6 +82,27 @@ public class SearchResponseMapper
     }
 
  
+    private static ProductPrice? OverlayLocalInventoryPrice(
+        ProductPrice? catalog,
+        SearchResponse.Types.SearchResult result,
+        string? storeId)
+    {
+        var local = TryExtractLocalInventoryPrice(result, storeId);
+        if (local is null) return null;
+
+        return new ProductPrice
+        {
+            CurrencyCode       = catalog?.CurrencyCode,
+            Price              = local.Price,
+            OriginalPrice      = catalog?.Price > 0 && catalog.Price != local.Price
+                                     ? catalog.Price : null,
+            Cost               = catalog?.Cost,
+            PriceEffectiveTime = catalog?.PriceEffectiveTime,
+            PriceExpireTime    = catalog?.PriceExpireTime,
+            PriceRange         = catalog?.PriceRange
+        };
+    }
+
     private static ProductPrice? TryExtractLocalInventoryPrice(
         SearchResponse.Types.SearchResult result, string? storeId)
     {
