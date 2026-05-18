@@ -9,4 +9,5 @@ public record ProductResult
     public Dictionary<string, string>? Attributes { get; init; }
     public List<VariantResult>? Variants { get; init; }
     public ProductPrice? Price { get; init; }
+    public Dictionary<string, object?>? VariantRollupValues { get; init; }
 }

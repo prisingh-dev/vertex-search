@@ -23,7 +23,6 @@ public class SearchRequestMapperTests
     {
         DefaultPageSize = 20,
         MaxPageSize     = 100,
-        DefaultOffset   = 0,
         SortMap = new Dictionary<string, string>
         {
             ["relevance"]         = "",
@@ -60,22 +59,21 @@ public class SearchRequestMapperTests
     }
 
     [Fact]
-    public void Uses_Default_Offset_When_Not_Specified()
+    public void Sets_PageToken_When_Provided()
     {
         var result = CreateMapper().ToRetailSearchRequest(
-            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1" });
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", PageToken = "next-page" });
 
-        Assert.Equal(0, result.Offset);
+        Assert.Equal("next-page", result.PageToken);
     }
 
     [Fact]
-    public void Uses_Provided_PageSize_And_Offset()
+    public void Uses_Provided_PageSize()
     {
         var result = CreateMapper().ToRetailSearchRequest(
-            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", PageSize = 10, Offset = 30 });
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", PageSize = 10 });
 
         Assert.Equal(10, result.PageSize);
-        Assert.Equal(30, result.Offset);
     }
 
     [Fact]
