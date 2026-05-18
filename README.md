@@ -39,7 +39,8 @@ POST /api/v1/search                        GET /api/v1/autocomplete
 ┌──────────────────────────┐       ┌─────────────────────────────────┐
 │ ConvertRequestStep       │       │ ConvertAutocompleteRequestStep   │
 │ (storeId → PlaceId,      │       │ (query lowercased)               │
-│  sort/facet alias map)   │       └────────────────┬────────────────┘
+│  sort/facet alias map,   │       └────────────────┬────────────────┘
+│  variantRollupKeys)      │
 └────────┬─────────────────┘                        │
          │                                          ▼
          ▼                             ┌─────────────────────────────────┐
@@ -182,7 +183,6 @@ export Gcp__ProjectId=my-gcp-project
 |---|---|---|
 | `Search:DefaultPageSize` | `20` | Page size when not specified in request |
 | `Search:MaxPageSize` | `100` | Maximum allowed page size (validated) |
-| `Search:DefaultOffset` | `0` | Pagination offset when not specified |
 | `Search:SortMap` | see below | Client sort alias → Vertex AI `orderBy` expression |
 | `Search:FacetKeys` | see below | Client facet alias → Vertex AI attribute name |
 
@@ -329,17 +329,23 @@ Keyword search against the Vertex AI Retail catalog. Requires GCP credentials.
 
 **Request body (`application/json`):**
 
+> Property names are **case-insensitive** — `variantRollupKeys`, `VariantRollupKeys`, etc. all work.
+
 ```json
 {
   "query": "red running shoes",
   "visitorId": "user-abc-123",
   "pageSize": 20,
-  "offset": 0,
+  "pageToken": "eyJvZmZzZXQiOjIwfQ",
   "orderBy": "price_low_to_high",
   "filter": "availability: IN_STOCK",
   "facetKeys": ["color", "brand", "size"],
   "queryExpansionCondition": "AUTO",
-  "storeId": "store-042"
+  "storeId": "store-042",
+  "variantRollupKeys": [
+    "inventory(store-042, price)",
+    "inventory(store-042, originalPrice)"
+  ]
 }
 ```
 
@@ -348,12 +354,13 @@ Keyword search against the Vertex AI Retail catalog. Requires GCP credentials.
 | `query` | string | **Yes** | Search query text |
 | `visitorId` | string | **Yes** | Visitor/session ID for analytics |
 | `pageSize` | integer | No | Results per page (default 20, max 100) |
-| `offset` | integer | No | Pagination offset (default 0) |
+| `pageToken` | string | No | Token for next page (from previous response's `nextPageToken`) |
 | `orderBy` | string | No | Sort alias: `relevance`, `price_low_to_high`, `price_high_to_low`, `newest` |
 | `filter` | string | No | Vertex AI Retail filter expression |
 | `facetKeys` | string[] | No | Facet aliases: `color`, `size`, `brand`, `category`, `price` |
 | `queryExpansionCondition` | string | No | `AUTO` or `DISABLED` (default `AUTO`) |
 | `storeId` | string | No | Scope results to a specific store (maps to `SearchRequest.PlaceId`) |
+| `variantRollupKeys` | string[] | No | Variant rollup keys to retrieve per-store inventory values. Values are **case-sensitive** (e.g. `price`, `originalPrice`). |
 
 **Response (`200 OK`):**
 
@@ -366,7 +373,16 @@ Keyword search against the Vertex AI Retail catalog. Requires GCP credentials.
       "categories": ["Footwear > Running"],
       "uri": "https://example.com/products/001",
       "attributes": { "color": "Red", "brand": "Nike" },
-      "variants": [{ "id": "variant-001-sz10" }]
+      "variants": [{ "id": "variant-001-sz10" }],
+      "price": {
+        "currencyCode": "USD",
+        "price": 89.99,
+        "originalPrice": 119.99
+      },
+      "variantRollupValues": {
+        "inventory(store-042, price)": 79.99,
+        "inventory(store-042, originalPrice)": 99.99
+      }
     }
   ],
   "facets": [
@@ -375,7 +391,8 @@ Keyword search against the Vertex AI Retail catalog. Requires GCP credentials.
       "values": [{ "value": "Red", "count": 42 }]
     }
   ],
-  "stats": { "returned": 20, "totalResults": 157, "offset": 0 },
+  "stats": { "returned": 20, "totalResults": 157 },
+  "nextPageToken": "eyJvZmZzZXQiOjIwfQ",
   "correctedQuery": "red running shoes",
   "attributionToken": "AbCdEfGh...",
   "appliedControls": ["boost-new-arrivals"]
@@ -384,11 +401,13 @@ Keyword search against the Vertex AI Retail catalog. Requires GCP credentials.
 
 Fields omitted from the response when empty/null (configured via `WhenWritingNull`).
 
+> **Note on `variantRollupValues`:** Values are returned exactly as Vertex AI resolves them for each requested rollup key. The rollup key field names (e.g. `price`, `originalPrice`) are **case-sensitive** — they must match what the Google Retail API expects.
+
 **Error responses:**
 
 | Status | Condition |
 |---|---|
-| `400` | Missing `query` / `visitorId`, invalid `pageSize` / `offset`, malformed JSON |
+| `400` | Missing `query` / `visitorId`, invalid `pageSize`, malformed JSON |
 | `401` | Missing or invalid GCP credentials |
 | `403` | Service account lacks required IAM roles |
 | `404` | Catalog or branch not found |
@@ -450,15 +469,15 @@ GET /api/v1/autocomplete?query=run&visitorId=user-123&maxSuggestions=5
 dotnet test VertexSearchApi.Tests/VertexSearchApi.Tests.csproj
 ```
 
-**68 unit tests** covering:
+**67 unit tests** covering:
 
 | Suite | Tests |
 |---|---|
-| `SearchRequestMapperTests` | Sort alias resolution, facet key mapping, GCP path building, query expansion, filter, storeId, pagination defaults |
+| `SearchRequestMapperTests` | Sort alias resolution, facet key mapping, GCP path building, query expansion, filter, storeId, pageToken, pagination defaults |
 | `SearchResponseMapperTests` | Product ID fallback logic, attribute mapping, facet mapping, stats, null handling |
 | `AutocompleteRequestMapperTests` | Query lowercasing, MaxSuggestions defaults, catalog path building, dataset |
 | `AutocompleteResponseMapperTests` | Suggestion mapping, attribution token, empty response |
-| `ValidateRequestStepTests` | Required fields, pageSize/offset bounds |
+| `ValidateRequestStepTests` | Required fields, pageSize bounds |
 | `ValidateAutocompleteRequestStepTests` | Required fields, maxSuggestions bounds |
 
 No GCP credentials required — all tests use in-memory data and `NullLogger`.
