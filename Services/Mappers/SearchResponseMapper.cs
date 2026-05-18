@@ -66,8 +66,7 @@ public class SearchResponseMapper
             .ToList();
 
         var catalogPrice = MapCatalogPrice(product.PriceInfo);
-        ProductPrice? price = OverlayLocalInventoryPrice(catalogPrice, result, storeId)
-                              ?? catalogPrice;
+        ProductPrice? price = OverlayLocalInventoryPrice(result, storeId) ?? catalogPrice;
 
         return new ProductResult
         {
@@ -83,24 +82,18 @@ public class SearchResponseMapper
 
  
     private static ProductPrice? OverlayLocalInventoryPrice(
-        ProductPrice? catalog,
         SearchResponse.Types.SearchResult result,
         string? storeId)
     {
-        var local = TryExtractLocalInventoryPrice(result, storeId);
-        if (local is null) return null;
+        if (storeId is null) return null;
 
-        return new ProductPrice
-        {
-            CurrencyCode       = catalog?.CurrencyCode,
-            Price              = local.Price,
-            OriginalPrice      = catalog?.Price > 0 && catalog.Price != local.Price
-                                     ? catalog.Price : null,
-            Cost               = catalog?.Cost,
-            PriceEffectiveTime = catalog?.PriceEffectiveTime,
-            PriceExpireTime    = catalog?.PriceExpireTime,
-            PriceRange         = catalog?.PriceRange
-        };
+        var localInventory = result.Product.LocalInventories
+            .FirstOrDefault(li => li.PlaceId == storeId);
+
+        if (localInventory?.PriceInfo is { Price: > 0 } localPi)
+            return MapCatalogPrice(localPi);
+
+        return TryExtractLocalInventoryPrice(result, storeId);
     }
 
     private static ProductPrice? TryExtractLocalInventoryPrice(
