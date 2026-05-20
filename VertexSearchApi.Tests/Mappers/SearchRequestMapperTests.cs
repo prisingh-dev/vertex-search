@@ -68,6 +68,36 @@ public class SearchRequestMapperTests
     }
 
     [Fact]
+    public void Defaults_To_First_Page_When_Neither_PageToken_Nor_Offset_Provided()
+    {
+        var result = CreateMapper().ToRetailSearchRequest(
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1" });
+
+        Assert.Equal(string.Empty, result.PageToken);
+        Assert.Equal(0, result.Offset);
+    }
+
+    [Fact]
+    public void Sets_Offset_When_No_PageToken()
+    {
+        var result = CreateMapper().ToRetailSearchRequest(
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", Offset = 40 });
+
+        Assert.Equal(40, result.Offset);
+        Assert.Equal(string.Empty, result.PageToken);
+    }
+
+    [Fact]
+    public void Prefers_PageToken_Over_Offset_When_Both_Provided()
+    {
+        var result = CreateMapper().ToRetailSearchRequest(
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", PageToken = "next-page", Offset = 40 });
+
+        Assert.Equal("next-page", result.PageToken);
+        Assert.Equal(0, result.Offset);
+    }
+
+    [Fact]
     public void Uses_Provided_PageSize()
     {
         var result = CreateMapper().ToRetailSearchRequest(
@@ -144,12 +174,39 @@ public class SearchRequestMapperTests
     }
 
     [Fact]
+    public void Sets_Filter_With_Price_And_InStock_Conditions()
+    {
+        var result = CreateMapper().ToRetailSearchRequest(
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", Filter = "price <= 5 AND in_stock = true" });
+
+        Assert.Equal("price <= 5 AND in_stock = true", result.Filter);
+    }
+
+    [Fact]
     public void Omits_Filter_When_Null()
     {
         var result = CreateMapper().ToRetailSearchRequest(
             new KeywordSearchRequest { Query = "shoes", VisitorId = "u1" });
 
         Assert.Equal(string.Empty, result.Filter);
+    }
+
+    [Fact]
+    public void Sets_CanonicalFilter_When_Provided()
+    {
+        var result = CreateMapper().ToRetailSearchRequest(
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1", CanonicalFilter = "categories: \"Footwear\"" });
+
+        Assert.Equal("categories: \"Footwear\"", result.CanonicalFilter);
+    }
+
+    [Fact]
+    public void Omits_CanonicalFilter_When_Null()
+    {
+        var result = CreateMapper().ToRetailSearchRequest(
+            new KeywordSearchRequest { Query = "shoes", VisitorId = "u1" });
+
+        Assert.Equal(string.Empty, result.CanonicalFilter);
     }
 
     [Fact]

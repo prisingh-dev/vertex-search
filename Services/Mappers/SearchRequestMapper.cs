@@ -32,9 +32,14 @@ public class SearchRequestMapper
 
         if (!string.IsNullOrWhiteSpace(api.PageToken))
             request.PageToken = api.PageToken;
+        else if (api.Offset.HasValue)
+            request.Offset = api.Offset.Value;
 
         if (!string.IsNullOrWhiteSpace(api.Filter))
             request.Filter = api.Filter;
+
+        if (!string.IsNullOrWhiteSpace(api.CanonicalFilter))
+            request.CanonicalFilter = api.CanonicalFilter;
 
         if (!string.IsNullOrWhiteSpace(api.StoreId))
             request.PlaceId = api.StoreId;
