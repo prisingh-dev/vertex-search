@@ -27,7 +27,8 @@ public class SearchRequestMapper
             Query              = api.Query!,
             VisitorId          = api.VisitorId!,
             PageSize           = pageSize,
-            QueryExpansionSpec = BuildQueryExpansionSpec(api.QueryExpansionCondition)
+            QueryExpansionSpec = BuildQueryExpansionSpec(api.QueryExpansionCondition),
+            CanonicalFilter    = api.CanonicalFilter ?? string.Empty
         };
 
         if (!string.IsNullOrWhiteSpace(api.PageToken))
