@@ -18,15 +18,6 @@
       "exactSearchableOption": "EXACT_SEARCHABLE_DISABLED",
       "retrievableOption": "RETRIEVABLE_DISABLED"
     },
-    "attributes.wolWebStatus": {
-      "key": "attributes.wolWebStatus",
-      "indexableOption": "INDEXABLE_DISABLED",
-      "dynamicFacetableOption": "DYNAMIC_FACETABLE_DISABLED",
-      "searchableOption": "SEARCHABLE_DISABLED",
-      "recommendationsFilteringOption": "RECOMMENDATIONS_FILTERING_DISABLED",
-      "exactSearchableOption": "EXACT_SEARCHABLE_DISABLED",
-      "retrievableOption": "RETRIEVABLE_DISABLED"
-    },
     "attributes.cupString": {
       "key": "attributes.cupString",
       "indexableOption": "INDEXABLE_ENABLED",
