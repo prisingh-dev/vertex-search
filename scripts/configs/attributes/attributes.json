@@ -1,0 +1,31 @@
+{
+  "catalogAttributes": {
+    "attributes.sapCategory": {
+      "key": "attributes.sapCategory",
+      "indexableOption": "INDEXABLE_ENABLED",
+      "dynamicFacetableOption": "DYNAMIC_FACETABLE_DISABLED",
+      "searchableOption": "SEARCHABLE_ENABLED",
+      "recommendationsFilteringOption": "RECOMMENDATIONS_FILTERING_DISABLED",
+      "exactSearchableOption": "EXACT_SEARCHABLE_DISABLED",
+      "retrievableOption": "RETRIEVABLE_DISABLED"
+    },
+    "attributes.vendor": {
+      "key": "attributes.vendor",
+      "indexableOption": "INDEXABLE_ENABLED",
+      "dynamicFacetableOption": "DYNAMIC_FACETABLE_DISABLED",
+      "searchableOption": "SEARCHABLE_ENABLED",
+      "recommendationsFilteringOption": "RECOMMENDATIONS_FILTERING_ENABLED",
+      "exactSearchableOption": "EXACT_SEARCHABLE_DISABLED",
+      "retrievableOption": "RETRIEVABLE_DISABLED"
+    },
+    "attributes.cupString": {
+      "key": "attributes.cupString",
+      "indexableOption": "INDEXABLE_ENABLED",
+      "searchableOption": "SEARCHABLE_ENABLED",
+      "dynamicFacetableOption": "DYNAMIC_FACETABLE_DISABLED",
+      "recommendationsFilteringOption": "RECOMMENDATIONS_FILTERING_DISABLED",
+      "exactSearchableOption": "EXACT_SEARCHABLE_DISABLED",
+      "retrievableOption": "RETRIEVABLE_DISABLED"
+    }
+  }
+}
