@@ -10,7 +10,7 @@ projectId="${1:-${PROJECT_ID}}"
 attributesConfigPath="${2:-${ATTRIBUTES_CONFIG_PATH}}"
 
 if [[ -z "$projectId" || -z "$attributesConfigPath" ]]; then
-  echo "Project id and path to the attributes config file must be specified"
+  echo "Project id and path to the attributes config file must be specified."
   exit 1
 fi
 
