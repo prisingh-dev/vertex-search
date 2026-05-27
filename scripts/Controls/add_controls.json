@@ -1,0 +1,63 @@
+{
+  "controls": [
+    {
+      "controlId": "pin-control-10",
+      "type": "PRODUCT_PINNING",
+      "productPinningSpec": {
+        "queryCondition": "query:sugar",
+        "matchType": "PARTIAL",
+        "pinnedProducts": [
+          { "id": "468551", "position": 3 }
+        ]
+      }
+    },
+    {
+      "controlId": "boost-control-10",
+      "type": "BOOST_CONTROL",
+      "boostSpec": {
+        "condition": "brand:Woolworths",
+        "queryCondition": "query: milk",
+        "matchType": "PARTIAL",
+        "boostStrength": 0.8
+      }
+    },
+    {
+      "controlId": "bury-control-10",
+      "type": "BURY_CONTROL",
+      "burySpec": {
+        "condition": "brand:CompetitorBrand",
+        "queryCondition": "query: milk",
+        "matchType": "FULL",
+        "buryStrength": 0.4
+      }
+    },
+    {
+      "controlId": "filter-control-10",
+      "type": "FILTER_CONTROL",
+      "filterSpec": {
+        "filterExpression": "price > 100 AND availability = 'IN_STOCK'",
+        "queryCondition": "query:shoes",
+        "matchType": "PARTIAL"
+      }
+    },
+    {
+      "controlId": "redirect-control-10",
+      "type": "REDIRECT_CONTROL",
+      "redirectSpec": {
+        "queryCondition": "query:shoes",
+        "matchType": "FULL",
+        "redirectUri": "/collections/shoes"
+      }
+    },
+    {
+      "controlId": "synonym-control-10",
+      "type": "SYNONYM_CONTROL",
+      "synonymSpec": {
+        "synonyms": [
+          { "terms": ["tv", "television"] },
+          { "terms": ["shoez", "shoes"] }
+        ]
+      }
+    }
+  ]
+}
